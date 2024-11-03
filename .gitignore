@@ -2,3 +2,10 @@ vendor/
 .idea/
 .vscode/
 .DS_Store
+*.db
+.env
+bin
+main
+tmp
+compextAI
+

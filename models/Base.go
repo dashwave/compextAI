@@ -7,8 +7,9 @@ import (
 )
 
 type Base struct {
-	ID        string         `json:"id" gorm:"primary_key;index"`
-	CreatedAt time.Time      `json:"created_at"`
-	UpdatedAt time.Time      `json:"updated_at"`
-	DeletedAt gorm.DeletedAt `json:"deleted_at"`
+	ID         uint           `json:"id" gorm:"primary_key"`
+	Identifier string         `json:"identifier" gorm:"unique;index"`
+	CreatedAt  time.Time      `json:"created_at"`
+	UpdatedAt  time.Time      `json:"updated_at"`
+	DeletedAt  gorm.DeletedAt `json:"deleted_at"`
 }
