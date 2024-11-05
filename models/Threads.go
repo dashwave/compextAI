@@ -9,13 +9,15 @@ import (
 // Thread is a collection of messages
 type Thread struct {
 	Base
+	User     User            `json:"user" gorm:"foreignKey:UserID"`
+	UserID   uint            `json:"user_id" gorm:"not null"`
 	Title    string          `json:"title" gorm:"not null"`
 	Metadata json.RawMessage `json:"metadata"`
 }
 
-func GetAllThreads(db *gorm.DB) ([]Thread, error) {
+func GetAllThreads(db *gorm.DB, userID uint) ([]Thread, error) {
 	var threads []Thread
-	if err := db.Find(&threads).Error; err != nil {
+	if err := db.Where("user_id = ?", userID).Find(&threads).Error; err != nil {
 		return nil, err
 	}
 	return threads, nil

@@ -6,6 +6,7 @@ import (
 
 	"github.com/burnerlee/compextAI/controllers"
 	"github.com/burnerlee/compextAI/models"
+	"github.com/burnerlee/compextAI/utils"
 	"github.com/burnerlee/compextAI/utils/responses"
 	"github.com/gorilla/mux"
 )
@@ -15,6 +16,22 @@ func (s *Server) ListMessages(w http.ResponseWriter, r *http.Request) {
 
 	if threadID == "" {
 		responses.Error(w, http.StatusBadRequest, "thread_id parameter is required")
+		return
+	}
+
+	userID, err := utils.GetUserIDFromRequest(r)
+	if err != nil {
+		responses.Error(w, http.StatusUnauthorized, err.Error())
+		return
+	}
+
+	hasAccess, err := utils.CheckThreadAccess(s.DB, threadID, uint(userID))
+	if err != nil {
+		responses.Error(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	if !hasAccess {
+		responses.Error(w, http.StatusForbidden, "You are not authorized to access this thread")
 		return
 	}
 
@@ -32,6 +49,22 @@ func (s *Server) CreateMessage(w http.ResponseWriter, r *http.Request) {
 
 	if threadID == "" {
 		responses.Error(w, http.StatusBadRequest, "thread_id parameter is required")
+		return
+	}
+
+	userID, err := utils.GetUserIDFromRequest(r)
+	if err != nil {
+		responses.Error(w, http.StatusUnauthorized, err.Error())
+		return
+	}
+
+	hasAccess, err := utils.CheckThreadAccess(s.DB, threadID, uint(userID))
+	if err != nil {
+		responses.Error(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	if !hasAccess {
+		responses.Error(w, http.StatusForbidden, "You are not authorized to access this thread")
 		return
 	}
 
@@ -68,6 +101,22 @@ func (s *Server) GetMessage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	userID, err := utils.GetUserIDFromRequest(r)
+	if err != nil {
+		responses.Error(w, http.StatusUnauthorized, err.Error())
+		return
+	}
+
+	hasAccess, err := utils.CheckMessageAccess(s.DB, messageID, uint(userID))
+	if err != nil {
+		responses.Error(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	if !hasAccess {
+		responses.Error(w, http.StatusForbidden, "You are not authorized to access this message")
+		return
+	}
+
 	message, err := models.GetMessage(s.DB, messageID)
 	if err != nil {
 		responses.Error(w, http.StatusInternalServerError, err.Error())
@@ -93,6 +142,22 @@ func (s *Server) UpdateMessage(w http.ResponseWriter, r *http.Request) {
 
 	if err := message.Validate(); err != nil {
 		responses.Error(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	userID, err := utils.GetUserIDFromRequest(r)
+	if err != nil {
+		responses.Error(w, http.StatusUnauthorized, err.Error())
+		return
+	}
+
+	hasAccess, err := utils.CheckMessageAccess(s.DB, messageID, uint(userID))
+	if err != nil {
+		responses.Error(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	if !hasAccess {
+		responses.Error(w, http.StatusForbidden, "You are not authorized to update this message")
 		return
 	}
 
@@ -123,6 +188,22 @@ func (s *Server) DeleteMessage(w http.ResponseWriter, r *http.Request) {
 
 	if messageID == "" {
 		responses.Error(w, http.StatusBadRequest, "id parameter is required")
+		return
+	}
+
+	userID, err := utils.GetUserIDFromRequest(r)
+	if err != nil {
+		responses.Error(w, http.StatusUnauthorized, err.Error())
+		return
+	}
+
+	hasAccess, err := utils.CheckMessageAccess(s.DB, messageID, uint(userID))
+	if err != nil {
+		responses.Error(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	if !hasAccess {
+		responses.Error(w, http.StatusForbidden, "You are not authorized to delete this message")
 		return
 	}
 

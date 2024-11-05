@@ -26,6 +26,7 @@ func CreateThread(db *gorm.DB, request *CreateThreadRequest) (*models.Thread, er
 	}
 
 	thread := models.Thread{
+		UserID: request.UserID,
 		Base: models.Base{
 			Identifier: threadID,
 		},
