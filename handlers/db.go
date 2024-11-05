@@ -12,9 +12,12 @@ import (
 )
 
 func loadEnv() {
+	fmt.Println("Loading environment variables")
 	err := godotenv.Load(".env")
 	if err != nil {
-		log.Fatalf("Error loading .env file: %v", err)
+		log.Warnf("Error loading .env file: %v", err)
+	} else {
+		log.Info("Environment variables loaded")
 	}
 }
 

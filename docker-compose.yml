@@ -1,0 +1,39 @@
+services:
+  compextai-db:
+    image: postgres:14
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    ports:
+      - 5433:5432
+    volumes:
+      - compextai-db-data:/var/lib/postgresql/data
+    networks:
+      - compextai-network
+    restart: always
+  compextai-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=postgres
+      - POSTGRES_HOST=compextai-db
+      - POSTGRES_PORT=5432
+      - POSTGRES_SSL_MODE=disable
+    depends_on:
+      - compextai-db
+    networks:
+      - compextai-network
+    ports:
+      - 8080:8080
+    restart: always
+
+volumes:
+  compextai-db-data:
+
+networks:
+  compextai-network:
+    driver: bridge
