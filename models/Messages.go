@@ -33,7 +33,7 @@ func CreateMessage(db *gorm.DB, message *Message) error {
 
 func GetMessage(db *gorm.DB, messageID string) (*Message, error) {
 	var message Message
-	if err := db.First(&message, "identifier = ?", messageID).Preload("Thread").Error; err != nil {
+	if err := db.Preload("Thread").First(&message, "identifier = ?", messageID).Error; err != nil {
 		return nil, err
 	}
 	return &message, nil
