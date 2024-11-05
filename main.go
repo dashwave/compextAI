@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	"fmt"
+	"os"
 
 	"github.com/burnerlee/compextAI/handlers"
 	log "github.com/sirupsen/logrus"
@@ -16,5 +18,11 @@ func main() {
 	}
 
 	log.Info("Server initialized successfully")
-	serverInstance.Run(":8080")
+
+	serverPort := os.Getenv("SERVER_PORT")
+	if serverPort == "" {
+		serverPort = "8080"
+	}
+
+	serverInstance.Run(fmt.Sprintf(":%s", serverPort))
 }
