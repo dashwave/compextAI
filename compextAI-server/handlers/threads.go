@@ -56,7 +56,7 @@ func (s *Server) CreateThread(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	responses.JSON(w, http.StatusCreated, threadCreated)
+	responses.JSON(w, http.StatusOK, threadCreated)
 }
 
 func (s *Server) GetThread(w http.ResponseWriter, r *http.Request) {

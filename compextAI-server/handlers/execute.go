@@ -43,15 +43,8 @@ func (s *Server) ExecuteThread(w http.ResponseWriter, r *http.Request) {
 
 	threadExecution, err := controllers.ExecuteThread(s.DB, &controllers.ExecuteThreadRequest{
 		ThreadID:                threadID,
-		ExecutionModel:          request.ExecutionModel,
-		Temperature:             request.Temperature,
-		Timeout:                 request.Timeout,
-		MaxCompletionTokens:     request.MaxCompletionTokens,
-		TopP:                    request.TopP,
-		MaxOutputTokens:         request.MaxOutputTokens,
-		ResponseFormat:          request.ResponseFormat,
+		ThreadExecutionParamsID: request.ThreadExecutionParamsID,
 		AppendAssistantResponse: request.AppendAssistantResponse,
-		SystemPrompt:            request.SystemPrompt,
 	})
 	if err != nil {
 		responses.Error(w, http.StatusInternalServerError, err.Error())

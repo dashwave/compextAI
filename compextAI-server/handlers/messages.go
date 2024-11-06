@@ -90,7 +90,7 @@ func (s *Server) CreateMessage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	responses.JSON(w, http.StatusCreated, createdMessage)
+	responses.JSON(w, http.StatusOK, createdMessage)
 }
 
 func (s *Server) GetMessage(w http.ResponseWriter, r *http.Request) {

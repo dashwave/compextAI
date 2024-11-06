@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 
@@ -12,9 +11,15 @@ import (
 )
 
 func ExecuteThread(db *gorm.DB, req *ExecuteThreadRequest) (interface{}, error) {
-	chatProvider, err := chat.GetChatCompletionsProvider(req.ExecutionModel)
+	threadExecutionParams, err := models.GetThreadExecutionParamsByID(db, req.ThreadExecutionParamsID)
 	if err != nil {
-		logger.GetLogger().Errorf("Error getting chat provider: %s: %v", req.ExecutionModel, err)
+		logger.GetLogger().Errorf("Error getting thread execution params: %s: %v", req.ThreadExecutionParamsID, err)
+		return nil, err
+	}
+
+	chatProvider, err := chat.GetChatCompletionsProvider(threadExecutionParams.Model)
+	if err != nil {
+		logger.GetLogger().Errorf("Error getting chat provider: %s: %v", threadExecutionParams.Model, err)
 		return nil, err
 	}
 
@@ -25,36 +30,19 @@ func ExecuteThread(db *gorm.DB, req *ExecuteThreadRequest) (interface{}, error) 
 		return nil, err
 	}
 
-	threadExecutionParams := &models.ThreadExecutionParams{
-		Model:               req.ExecutionModel,
-		Temperature:         req.Temperature,
-		Timeout:             req.Timeout,
-		MaxCompletionTokens: req.MaxCompletionTokens,
-		TopP:                req.TopP,
-		MaxOutputTokens:     req.MaxOutputTokens,
-		ResponseFormat:      req.ResponseFormat,
-		SystemPrompt:        req.SystemPrompt,
+	threadExecution := &models.ThreadExecution{
+		ThreadID:                req.ThreadID,
+		ThreadExecutionParamsID: req.ThreadExecutionParamsID,
+		Status:                  models.ThreadExecutionStatus_IN_PROGRESS,
 	}
 
-	// start thread execution
-	threadExecutionParamsBytes, err := json.Marshal(threadExecutionParams)
+	threadExecution, err = models.CreateThreadExecution(db, threadExecution)
 	if err != nil {
-		logger.GetLogger().Errorf("Error marshalling thread execution params: %v", err)
-		return nil, err
-	}
-
-	threadExecution := models.ThreadExecution{
-		ThreadID:              req.ThreadID,
-		ThreadExecutionParams: threadExecutionParamsBytes,
-		Status:                models.ThreadExecutionStatus_IN_PROGRESS,
-	}
-
-	if err := models.CreateThreadExecution(db, &threadExecution); err != nil {
 		logger.GetLogger().Errorf("Error creating thread execution: %v", err)
 		return nil, err
 	}
 
-	go func(thread *models.Thread, threadExecutionParams *models.ThreadExecutionParams, appendAssistantResponse bool) {
+	go func(thread models.Thread, threadExecution models.ThreadExecution, threadExecutionParams models.ThreadExecutionParams, appendAssistantResponse bool) {
 		// get the user
 		user, err := models.GetUserByID(db, thread.UserID)
 		if err != nil {
@@ -63,7 +51,7 @@ func ExecuteThread(db *gorm.DB, req *ExecuteThreadRequest) (interface{}, error) 
 		}
 
 		// execute the thread using the chat provider
-		statusCode, threadExecutionResponse, err := chatProvider.ExecuteThread(db, user, thread, threadExecutionParams)
+		statusCode, threadExecutionResponse, err := chatProvider.ExecuteThread(db, user, &thread, &threadExecutionParams)
 		if err != nil {
 			logger.GetLogger().Errorf("Error executing thread: %s: %v: %v", req.ThreadID, err, threadExecutionResponse)
 			handleThreadExecutionError(db, &threadExecution, fmt.Errorf("error executing thread: %v: %v", err, threadExecutionResponse))
@@ -78,7 +66,7 @@ func ExecuteThread(db *gorm.DB, req *ExecuteThreadRequest) (interface{}, error) 
 
 		logger.GetLogger().Infof("Thread execution completed: %s", req.ThreadID)
 		handleThreadExecutionSuccess(db, &threadExecution, threadExecutionResponse, appendAssistantResponse)
-	}(thread, threadExecutionParams, req.AppendAssistantResponse)
+	}(*thread, *threadExecution, *threadExecutionParams, req.AppendAssistantResponse)
 
 	return threadExecution, nil
 }
@@ -95,6 +83,7 @@ func handleThreadExecutionSuccess(db *gorm.DB, threadExecution *models.ThreadExe
 	responseRole := responseMessage["role"].(string)
 
 	if appendAssistantResponse {
+		logger.GetLogger().Infof("Appending assistant response")
 		if err := models.CreateMessage(db, &models.Message{
 			ThreadID: threadExecution.ThreadID,
 			Role:     responseRole,

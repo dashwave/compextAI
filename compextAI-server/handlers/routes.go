@@ -33,4 +33,12 @@ func (s *Server) InitRoutes() {
 	userRouter := v1Router.PathPrefix("/user").Subrouter()
 	userRouter.HandleFunc("/signup", s.CreateUser).Methods("POST")
 	userRouter.HandleFunc("/login", s.Login).Methods("POST")
+
+	threadExecutionParamsRouter := v1Router.PathPrefix("/execparams").Subrouter()
+	threadExecutionParamsRouter.HandleFunc("/fetchall", middlewares.AuthMiddleware(s.ListThreadExecutionParams, s.DB)).Methods("GET")
+	threadExecutionParamsRouter.HandleFunc("/create", middlewares.AuthMiddleware(s.CreateThreadExecutionParams, s.DB)).Methods("POST")
+	threadExecutionParamsRouter.HandleFunc("/fetch", middlewares.AuthMiddleware(s.GetThreadExecutionParamsByNameAndEnv, s.DB)).Methods("POST")
+	threadExecutionParamsRouter.HandleFunc("/update", middlewares.AuthMiddleware(s.UpdateThreadExecutionParams, s.DB)).Methods("PUT")
+	threadExecutionParamsRouter.HandleFunc("/delete", middlewares.AuthMiddleware(s.DeleteThreadExecutionParams, s.DB)).Methods("DELETE")
+
 }
