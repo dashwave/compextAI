@@ -5,7 +5,7 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 import openai_models as openai
 import anthropic_models as anthropic
-
+import json
 app = fastapi.FastAPI()
 
 @app.get("/")
@@ -30,7 +30,7 @@ class ChatCompletionRequest(BaseModel):
 def chat_completion_openai(request: ChatCompletionRequest):
     try:
         response = openai.chat_completion(request.api_key, request.model, request.messages, request.temperature, request.timeout, request.max_completion_tokens, request.response_format)
-        return JSONResponse(status_code=200, content={"role": "assistant", "content": response})
+        return JSONResponse(status_code=200, content=json.loads(response))
     except Exception as e:
         print(e)
         return JSONResponse(status_code=500, content={"error": str(e)})
@@ -39,7 +39,7 @@ def chat_completion_openai(request: ChatCompletionRequest):
 def chat_completion_anthropic(request: ChatCompletionRequest):
     try:
         response = anthropic.chat_completion(request.api_key, request.system_prompt, request.model, request.messages, request.temperature, request.timeout, request.max_tokens)
-        return JSONResponse(status_code=200, content={"role": "assistant", "content": response})
+        return JSONResponse(status_code=200, content=json.loads(response))
     except Exception as e:
         print(e)
         return JSONResponse(status_code=500, content={"error": str(e)})

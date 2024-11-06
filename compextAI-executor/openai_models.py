@@ -15,4 +15,4 @@ def chat_completion(api_key, model, messages, temperature, timeout, max_completi
         max_completion_tokens=max_completion_tokens,
         response_format=response_format,
     )
-    return response.choices[0].message.content
+    return response.model_dump_json()
