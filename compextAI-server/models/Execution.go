@@ -31,10 +31,12 @@ type ThreadExecutionParams struct {
 	Model               string      `json:"model"`
 	Temperature         float64     `json:"temperature"`
 	Timeout             int         `json:"timeout"`
+	MaxTokens           int         `json:"max_tokens"`
 	MaxCompletionTokens int         `json:"max_completion_tokens"`
 	TopP                float64     `json:"top_p"`
 	MaxOutputTokens     int         `json:"max_output_tokens"`
 	ResponseFormat      interface{} `json:"response_format"`
+	SystemPrompt        string      `json:"system_prompt"`
 }
 
 func CreateThreadExecution(db *gorm.DB, threadExecution *ThreadExecution) error {

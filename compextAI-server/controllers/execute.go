@@ -33,6 +33,7 @@ func ExecuteThread(db *gorm.DB, req *ExecuteThreadRequest) (interface{}, error) 
 		TopP:                req.TopP,
 		MaxOutputTokens:     req.MaxOutputTokens,
 		ResponseFormat:      req.ResponseFormat,
+		SystemPrompt:        req.SystemPrompt,
 	}
 
 	// start thread execution
@@ -62,7 +63,7 @@ func ExecuteThread(db *gorm.DB, req *ExecuteThreadRequest) (interface{}, error) 
 		}
 
 		// execute the thread using the chat provider
-		statusCode, threadExecutionResponse, err := chatProvider.ExecuteThread(db, user.OpenAIKey, thread, threadExecutionParams)
+		statusCode, threadExecutionResponse, err := chatProvider.ExecuteThread(db, user, thread, threadExecutionParams)
 		if err != nil {
 			logger.GetLogger().Errorf("Error executing thread: %s: %v: %v", req.ThreadID, err, threadExecutionResponse)
 			handleThreadExecutionError(db, &threadExecution, fmt.Errorf("error executing thread: %v: %v", err, threadExecutionResponse))

@@ -18,7 +18,7 @@ type ChatCompletionsProvider interface {
 	GetProviderOwner() string
 	GetProviderModel() string
 	GetProviderIdentifier() string
-	ExecuteThread(db *gorm.DB, apiKey string, thread *models.Thread, threadExecutionParams *models.ThreadExecutionParams) (int, interface{}, error)
+	ExecuteThread(db *gorm.DB, user *models.User, thread *models.Thread, threadExecutionParams *models.ThreadExecutionParams) (int, interface{}, error)
 }
 
 type ChatCompletionsProvider_Enum string

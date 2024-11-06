@@ -11,6 +11,7 @@ type ExecuteThreadRequest struct {
 	MaxOutputTokens         int         `json:"max_output_tokens"`
 	ResponseFormat          interface{} `json:"response_format"`
 	AppendAssistantResponse bool        `json:"append_assistant_response"`
+	SystemPrompt            string      `json:"system_prompt"`
 }
 
 func (r *ExecuteThreadRequest) Validate() error {

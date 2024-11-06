@@ -123,13 +123,14 @@ type gpt4oExecutionData struct {
 	Temperature         float64              `json:"temperature"`
 	MaxCompletionTokens int                  `json:"max_completion_tokens"`
 	Timeout             int                  `json:"timeout"`
+	ResponseFormat      interface{}          `json:"response_format"`
 }
 
 func (d *gpt4oExecutionData) Validate() error {
 	return nil
 }
 
-func (g *GPT4O) ExecuteThread(db *gorm.DB, apiKey string, thread *models.Thread, threadExecutionParams *models.ThreadExecutionParams) (int, interface{}, error) {
+func (g *GPT4O) ExecuteThread(db *gorm.DB, user *models.User, thread *models.Thread, threadExecutionParams *models.ThreadExecutionParams) (int, interface{}, error) {
 	threadMessages, err := thread.GetAllMessages(db)
 	if err != nil {
 		logger.GetLogger().Errorf("Error getting thread messages: %v", err)
@@ -138,7 +139,6 @@ func (g *GPT4O) ExecuteThread(db *gorm.DB, apiKey string, thread *models.Thread,
 
 	modelMessages := make([]gpt4oOpenAIMessage, 0)
 	for _, message := range threadMessages {
-		logger.GetLogger().Infof("Converting message to provider format: %v", message)
 		modelMessage, err := g.ConvertMessageToProviderFormat(&message)
 		if err != nil {
 			logger.GetLogger().Errorf("Error converting message to provider format: %v", err)
@@ -158,12 +158,13 @@ func (g *GPT4O) ExecuteThread(db *gorm.DB, apiKey string, thread *models.Thread,
 	}
 
 	executionData := gpt4oExecutionData{
-		APIKey:              apiKey,
+		APIKey:              user.OpenAIKey,
 		Model:               g.model,
 		Messages:            modelMessages,
 		Temperature:         threadExecutionParams.Temperature,
 		MaxCompletionTokens: threadExecutionParams.MaxCompletionTokens,
 		Timeout:             threadExecutionParams.Timeout,
+		ResponseFormat:      threadExecutionParams.ResponseFormat,
 	}
 
 	if err := executionData.Validate(); err != nil {

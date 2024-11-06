@@ -4,10 +4,11 @@ import "gorm.io/gorm"
 
 type User struct {
 	Base
-	Username  string `json:"username" gorm:"unique"`
-	Password  string `json:"password" gorm:"not null"`
-	APIToken  string `json:"api_token" gorm:"unique"`
-	OpenAIKey string `json:"openai_key"`
+	Username     string `json:"username" gorm:"unique"`
+	Password     string `json:"password" gorm:"not null"`
+	APIToken     string `json:"api_token" gorm:"unique"`
+	OpenAIKey    string `json:"openai_key"`
+	AnthropicKey string `json:"anthropic_key"`
 }
 
 func GetUserIDByAPIToken(db *gorm.DB, token string) (uint, error) {

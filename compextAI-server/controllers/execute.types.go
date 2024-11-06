@@ -10,6 +10,7 @@ type ExecuteThreadRequest struct {
 	MaxOutputTokens         int
 	ResponseFormat          interface{}
 	AppendAssistantResponse bool
+	SystemPrompt            string
 }
 
 type ExecuteThreadResponse struct {

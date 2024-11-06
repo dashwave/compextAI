@@ -51,6 +51,7 @@ func (s *Server) ExecuteThread(w http.ResponseWriter, r *http.Request) {
 		MaxOutputTokens:         request.MaxOutputTokens,
 		ResponseFormat:          request.ResponseFormat,
 		AppendAssistantResponse: request.AppendAssistantResponse,
+		SystemPrompt:            request.SystemPrompt,
 	})
 	if err != nil {
 		responses.Error(w, http.StatusInternalServerError, err.Error())
