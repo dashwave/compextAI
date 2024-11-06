@@ -11,9 +11,9 @@ import (
 )
 
 func ExecuteThread(db *gorm.DB, req *ExecuteThreadRequest) (interface{}, error) {
-	threadExecutionParams, err := models.GetThreadExecutionParamsByID(db, req.ThreadExecutionParamsID)
+	threadExecutionParams, err := models.GetThreadExecutionParamsByID(db, req.ThreadExecutionParamID)
 	if err != nil {
-		logger.GetLogger().Errorf("Error getting thread execution params: %s: %v", req.ThreadExecutionParamsID, err)
+		logger.GetLogger().Errorf("Error getting thread execution params: %s: %v", req.ThreadExecutionParamID, err)
 		return nil, err
 	}
 
@@ -31,9 +31,9 @@ func ExecuteThread(db *gorm.DB, req *ExecuteThreadRequest) (interface{}, error) 
 	}
 
 	threadExecution := &models.ThreadExecution{
-		ThreadID:                req.ThreadID,
-		ThreadExecutionParamsID: req.ThreadExecutionParamsID,
-		Status:                  models.ThreadExecutionStatus_IN_PROGRESS,
+		ThreadID:               req.ThreadID,
+		ThreadExecutionParamID: req.ThreadExecutionParamID,
+		Status:                 models.ThreadExecutionStatus_IN_PROGRESS,
 	}
 
 	threadExecution, err = models.CreateThreadExecution(db, threadExecution)

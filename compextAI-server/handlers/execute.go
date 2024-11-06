@@ -43,7 +43,7 @@ func (s *Server) ExecuteThread(w http.ResponseWriter, r *http.Request) {
 
 	threadExecution, err := controllers.ExecuteThread(s.DB, &controllers.ExecuteThreadRequest{
 		ThreadID:                threadID,
-		ThreadExecutionParamsID: request.ThreadExecutionParamsID,
+		ThreadExecutionParamID:  request.ThreadExecutionParamID,
 		AppendAssistantResponse: request.AppendAssistantResponse,
 	})
 	if err != nil {

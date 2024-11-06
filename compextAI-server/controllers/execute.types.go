@@ -2,7 +2,7 @@ package controllers
 
 type ExecuteThreadRequest struct {
 	ThreadID                string
-	ThreadExecutionParamsID string
+	ThreadExecutionParamID  string
 	AppendAssistantResponse bool
 }
 

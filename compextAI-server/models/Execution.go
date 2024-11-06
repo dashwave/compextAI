@@ -17,14 +17,14 @@ const (
 
 type ThreadExecution struct {
 	Base
-	ThreadID                string                `json:"thread_id"`
-	Thread                  Thread                `json:"thread" gorm:"foreignKey:ThreadID;references:Identifier"`
-	ThreadExecutionParamsID string                `json:"thread_execution_params_id"`
-	ThreadExecutionParams   ThreadExecutionParams `json:"thread_execution_params" gorm:"foreignKey:ThreadExecutionParamsID;references:Identifier"`
-	Status                  string                `json:"status"`
-	Output                  string                `json:"output"`
-	ResponseContent         string                `json:"response_content"`
-	ResponseRole            string                `json:"response_role"`
+	ThreadID               string                `json:"thread_id"`
+	Thread                 Thread                `json:"thread" gorm:"foreignKey:ThreadID;references:Identifier"`
+	ThreadExecutionParamID string                `json:"thread_execution_param_id"`
+	ThreadExecutionParams  ThreadExecutionParams `json:"thread_execution_params" gorm:"foreignKey:ThreadExecutionParamID;references:Identifier"`
+	Status                 string                `json:"status"`
+	Output                 string                `json:"output"`
+	ResponseContent        string                `json:"response_content"`
+	ResponseRole           string                `json:"response_role"`
 }
 
 // ThreadExecutionParams are the parameters for executing a thread
