@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/burnerlee/compextAI/controllers"
+	"github.com/burnerlee/compextAI/models"
 	"github.com/burnerlee/compextAI/utils"
 	"github.com/burnerlee/compextAI/utils/responses"
 	"github.com/gorilla/mux"
@@ -57,4 +58,78 @@ func (s *Server) ExecuteThread(w http.ResponseWriter, r *http.Request) {
 	}
 
 	responses.JSON(w, http.StatusOK, threadExecution)
+}
+
+func (s *Server) GetThreadExecutionStatus(w http.ResponseWriter, r *http.Request) {
+	executionID := mux.Vars(r)["id"]
+
+	if executionID == "" {
+		responses.Error(w, http.StatusBadRequest, "id parameter is required")
+		return
+	}
+
+	userID, err := utils.GetUserIDFromRequest(r)
+	if err != nil {
+		responses.Error(w, http.StatusUnauthorized, err.Error())
+		return
+	}
+
+	hasAccess, err := utils.CheckThreadExecutionAccess(s.DB, executionID, uint(userID))
+	if err != nil {
+		responses.Error(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	if !hasAccess {
+		responses.Error(w, http.StatusForbidden, "You are not authorized to access this thread execution")
+		return
+	}
+
+	threadExecution, err := models.GetThreadExecutionByID(s.DB, executionID)
+	if err != nil {
+		responses.Error(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	responses.JSON(w, http.StatusOK, ThreadExecutionStatusResponse{Status: threadExecution.Status})
+}
+
+func (s *Server) GetThreadExecutionResponse(w http.ResponseWriter, r *http.Request) {
+	executionID := mux.Vars(r)["id"]
+
+	if executionID == "" {
+		responses.Error(w, http.StatusBadRequest, "id parameter is required")
+		return
+	}
+
+	userID, err := utils.GetUserIDFromRequest(r)
+	if err != nil {
+		responses.Error(w, http.StatusUnauthorized, err.Error())
+		return
+	}
+
+	hasAccess, err := utils.CheckThreadExecutionAccess(s.DB, executionID, uint(userID))
+	if err != nil {
+		responses.Error(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	if !hasAccess {
+		responses.Error(w, http.StatusForbidden, "You are not authorized to access this thread execution")
+		return
+	}
+
+	threadExecution, err := models.GetThreadExecutionByID(s.DB, executionID)
+	if err != nil {
+		responses.Error(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	if threadExecution.Status != models.ThreadExecutionStatus_COMPLETED {
+		responses.Error(w, http.StatusBadRequest, "Thread execution is not completed")
+		return
+	}
+
+	responses.JSON(w, http.StatusOK, map[string]interface{}{
+		"content": threadExecution.ResponseContent,
+		"role":    threadExecution.ResponseRole,
+	})
 }

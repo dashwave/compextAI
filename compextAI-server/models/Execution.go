@@ -22,6 +22,8 @@ type ThreadExecution struct {
 	ThreadExecutionParams json.RawMessage `json:"thread_execution_params"`
 	Status                string          `json:"status"`
 	Output                string          `json:"output"`
+	ResponseContent       string          `json:"response_content"`
+	ResponseRole          string          `json:"response_role"`
 }
 
 // ThreadExecutionParams are the parameters for executing a thread
@@ -51,5 +53,19 @@ func UpdateThreadExecution(db *gorm.DB, threadExecution *ThreadExecution) error 
 	if threadExecution.Output != "" {
 		updateData["output"] = threadExecution.Output
 	}
+	if threadExecution.ResponseContent != "" {
+		updateData["response_content"] = threadExecution.ResponseContent
+	}
+	if threadExecution.ResponseRole != "" {
+		updateData["response_role"] = threadExecution.ResponseRole
+	}
 	return db.Model(&ThreadExecution{}).Where("identifier = ?", threadExecution.Identifier).Updates(updateData).Error
+}
+
+func GetThreadExecutionByID(db *gorm.DB, executionID string) (*ThreadExecution, error) {
+	var threadExecution ThreadExecution
+	if err := db.Where("identifier = ?", executionID).Preload("Thread").First(&threadExecution).Error; err != nil {
+		return nil, err
+	}
+	return &threadExecution, nil
 }

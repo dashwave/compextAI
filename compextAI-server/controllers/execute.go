@@ -89,21 +89,25 @@ func handleThreadExecutionError(db *gorm.DB, threadExecution *models.ThreadExecu
 }
 
 func handleThreadExecutionSuccess(db *gorm.DB, threadExecution *models.ThreadExecution, threadExecutionResponse interface{}, appendAssistantResponse bool) {
-	threadExecution.Status = models.ThreadExecutionStatus_COMPLETED
-	threadExecution.Output = fmt.Sprintf("%v", threadExecutionResponse)
-	models.UpdateThreadExecution(db, threadExecution)
+	responseMessage := threadExecutionResponse.(map[string]interface{})
+	responseContent := responseMessage["content"].(string)
+	responseRole := responseMessage["role"].(string)
 
 	if appendAssistantResponse {
-		responseMessage := threadExecutionResponse.(map[string]interface{})
-
 		if err := models.CreateMessage(db, &models.Message{
 			ThreadID: threadExecution.ThreadID,
-			Role:     responseMessage["role"].(string),
-			Content:  responseMessage["content"].(string),
+			Role:     responseRole,
+			Content:  responseContent,
 		}); err != nil {
 			logger.GetLogger().Errorf("Error creating assistant message: %v", err)
 		} else {
 			logger.GetLogger().Infof("assistant message created")
 		}
 	}
+
+	threadExecution.Status = models.ThreadExecutionStatus_COMPLETED
+	threadExecution.Output = fmt.Sprintf("%v", threadExecutionResponse)
+	threadExecution.ResponseContent = responseContent
+	threadExecution.ResponseRole = responseRole
+	models.UpdateThreadExecution(db, threadExecution)
 }

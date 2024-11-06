@@ -40,3 +40,12 @@ func CheckMessageAccess(db *gorm.DB, messageID string, userID uint) (bool, error
 
 	return message.Thread.UserID == userID, nil
 }
+
+func CheckThreadExecutionAccess(db *gorm.DB, executionID string, userID uint) (bool, error) {
+	threadExecution, err := models.GetThreadExecutionByID(db, executionID)
+	if err != nil {
+		return false, err
+	}
+
+	return threadExecution.Thread.UserID == userID, nil
+}

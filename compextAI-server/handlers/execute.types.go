@@ -23,3 +23,7 @@ func (r *ExecuteThreadRequest) Validate() error {
 type ExecuteThreadResponse struct {
 	ThreadExecutionID string `json:"thread_execution_id"`
 }
+
+type ThreadExecutionStatusResponse struct {
+	Status string `json:"status"`
+}

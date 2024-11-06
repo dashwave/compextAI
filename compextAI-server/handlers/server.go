@@ -58,7 +58,7 @@ func (s *Server) Run(addr string) {
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"*"},
 		AllowCredentials: true,
-		Debug:            true,
+		Debug:            false,
 	})
 
 	handler := c.Handler(s.Router)
