@@ -4,9 +4,9 @@ import (
 	"context"
 	"net/http"
 
+	"github.com/burnerlee/compextAI/internal/logger"
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
-	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
 
@@ -21,7 +21,7 @@ type Server struct {
 var err error
 
 func InitServer(ctx context.Context) (*Server, error) {
-	log.Info("Initializing server")
+	logger.GetLogger().Info("Initializing server")
 
 	s = &Server{
 		Ctx: ctx,
@@ -30,20 +30,20 @@ func InitServer(ctx context.Context) (*Server, error) {
 	s.Router = mux.NewRouter()
 
 	// initialize the database
-	log.Info("Initializing database")
+	logger.GetLogger().Info("Initializing database")
 	s.DB, err = InitDB()
 	if err != nil {
-		log.Errorf("Error initializing database: %v", err)
+		logger.GetLogger().Errorf("Error initializing database: %v", err)
 		return nil, err
 	}
 
-	log.Info("Migrating database")
+	logger.GetLogger().Info("Migrating database")
 	if err := MigrateDB(s.DB); err != nil {
-		log.Errorf("Error migrating database: %v", err)
+		logger.GetLogger().Errorf("Error migrating database: %v", err)
 		return nil, err
 	}
 
-	log.Info("Database initialized successfully")
+	logger.GetLogger().Info("Database initialized successfully")
 
 	s.InitRoutes()
 
@@ -51,7 +51,7 @@ func InitServer(ctx context.Context) (*Server, error) {
 }
 
 func (s *Server) Run(addr string) {
-	log.Infof("Running server on %s", addr)
+	logger.GetLogger().Infof("Running server on %s", addr)
 
 	c := cors.New(cors.Options{
 		AllowedOrigins:   []string{"*"},
@@ -63,8 +63,8 @@ func (s *Server) Run(addr string) {
 
 	handler := c.Handler(s.Router)
 	if err := http.ListenAndServe(addr, handler); err != nil {
-		log.Fatalf("Error starting server: %v", err)
+		logger.GetLogger().Fatalf("Error starting server: %v", err)
 	}
 
-	log.Info("Shutting down server gracefully")
+	logger.GetLogger().Info("Shutting down server gracefully")
 }

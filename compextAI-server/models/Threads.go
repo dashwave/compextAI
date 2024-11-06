@@ -2,7 +2,10 @@ package models
 
 import (
 	"encoding/json"
+	"fmt"
 
+	"github.com/burnerlee/compextAI/constants"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -24,6 +27,10 @@ func GetAllThreads(db *gorm.DB, userID uint) ([]Thread, error) {
 }
 
 func CreateThread(db *gorm.DB, thread *Thread) error {
+	// create a new thread_id
+	threadIDUniqueIdentifier := uuid.New().String()
+	threadID := fmt.Sprintf("%s%s", constants.THREAD_ID_PREFIX, threadIDUniqueIdentifier)
+	thread.Identifier = threadID
 	return db.Create(thread).Error
 }
 
@@ -52,4 +59,12 @@ func UpdateThread(db *gorm.DB, thread *Thread) (*Thread, error) {
 
 func DeleteThread(db *gorm.DB, threadID string) error {
 	return db.Where("identifier = ?", threadID).Delete(&Thread{}).Error
+}
+
+func (t *Thread) GetAllMessages(db *gorm.DB) ([]Message, error) {
+	var messages []Message
+	if err := db.Where("thread_id = ?", t.Identifier).Find(&messages).Error; err != nil {
+		return nil, err
+	}
+	return messages, nil
 }

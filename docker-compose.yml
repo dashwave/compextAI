@@ -14,7 +14,7 @@ services:
     restart: always
   compextai-server:
     build:
-      context: .
+      context: compextAI-server/
       dockerfile: Dockerfile
     environment:
       - POSTGRES_USER=postgres
@@ -23,14 +23,27 @@ services:
       - POSTGRES_HOST=compextai-db
       - POSTGRES_PORT=5432
       - POSTGRES_SSL_MODE=disable
+      - SERVER_PORT=8888
+      - EXECUTOR_BASE_URL=http://compextai-executor:8889
     depends_on:
       - compextai-db
+      - compextai-executor
     networks:
       - compextai-network
     ports:
-      - 8080:8080
+      - 8899:8888
     restart: always
-
+  compextai-executor:
+    build:
+      context: compextAI-executor/
+      dockerfile: Dockerfile
+    environment:
+      - SERVER_PORT=8889
+    networks:
+      - compextai-network
+    ports:
+      - 8889:8889
+    restart: always
 volumes:
   compextai-db-data:
 

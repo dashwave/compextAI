@@ -4,9 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/burnerlee/compextAI/constants"
 	"github.com/burnerlee/compextAI/models"
-	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -16,20 +14,13 @@ func CreateThread(db *gorm.DB, request *CreateThreadRequest) (*models.Thread, er
 		return nil, fmt.Errorf("failed to begin transaction: %w", tx.Error)
 	}
 
-	// create a new thread_id
-	threadIDUniqueIdentifier := uuid.New().String()
-	threadID := fmt.Sprintf("%s%s", constants.THREAD_ID_PREFIX, threadIDUniqueIdentifier)
-
 	metadataJsonBlob, err := json.Marshal(request.Metadata)
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal metadata: %w", err)
 	}
 
 	thread := models.Thread{
-		UserID: request.UserID,
-		Base: models.Base{
-			Identifier: threadID,
-		},
+		UserID:   request.UserID,
 		Title:    request.Title,
 		Metadata: metadataJsonBlob,
 	}

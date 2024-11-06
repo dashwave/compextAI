@@ -4,9 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/burnerlee/compextAI/constants"
 	"github.com/burnerlee/compextAI/models"
-	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -30,13 +28,7 @@ func CreateMessage(db *gorm.DB, req *CreateMessageRequest) (*models.Message, err
 		return nil, fmt.Errorf("failed to marshal metadata: %w", err)
 	}
 
-	messageIDIdentifier := uuid.New().String()
-	messageID := fmt.Sprintf("%s%s", constants.MESSAGE_ID_PREFIX, messageIDIdentifier)
-
 	message := &models.Message{
-		Base: models.Base{
-			Identifier: messageID,
-		},
 		ThreadID: req.ThreadID,
 		Content:  req.Content,
 		Role:     req.Role,

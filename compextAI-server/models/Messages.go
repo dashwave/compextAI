@@ -2,7 +2,10 @@ package models
 
 import (
 	"encoding/json"
+	"fmt"
 
+	"github.com/burnerlee/compextAI/constants"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -28,6 +31,10 @@ func GetAllMessages(db *gorm.DB, threadID string) ([]Message, error) {
 }
 
 func CreateMessage(db *gorm.DB, message *Message) error {
+	// create a new message_id
+	messageIDUniqueIdentifier := uuid.New().String()
+	messageID := fmt.Sprintf("%s%s", constants.MESSAGE_ID_PREFIX, messageIDUniqueIdentifier)
+	message.Identifier = messageID
 	return db.Create(message).Error
 }
 

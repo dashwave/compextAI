@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/burnerlee/compextAI/internal/logger"
 	"github.com/burnerlee/compextAI/models"
 	"github.com/joho/godotenv"
-	log "github.com/sirupsen/logrus"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -15,9 +15,9 @@ func loadEnv() {
 	fmt.Println("Loading environment variables")
 	err := godotenv.Load(".env")
 	if err != nil {
-		log.Warnf("Error loading .env file: %v", err)
+		logger.GetLogger().Warnf("Error loading .env file: %v", err)
 	} else {
-		log.Info("Environment variables loaded")
+		logger.GetLogger().Info("Environment variables loaded")
 	}
 }
 
@@ -41,5 +41,5 @@ func InitDB() (*gorm.DB, error) {
 }
 
 func MigrateDB(db *gorm.DB) error {
-	return db.AutoMigrate(&models.Message{}, &models.Thread{})
+	return db.AutoMigrate(&models.Message{}, &models.Thread{}, &models.User{}, &models.ThreadExecution{})
 }

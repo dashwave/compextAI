@@ -14,6 +14,9 @@ func (s *Server) InitRoutes() {
 	threadRouter.HandleFunc("/{id}", middlewares.AuthMiddleware(s.UpdateThread, s.DB)).Methods("PUT")
 	threadRouter.HandleFunc("/{id}", middlewares.AuthMiddleware(s.DeleteThread, s.DB)).Methods("DELETE")
 
+	threadExecRouter := threadRouter.PathPrefix("/{id}/execute").Subrouter()
+	threadExecRouter.HandleFunc("", middlewares.AuthMiddleware(s.ExecuteThread, s.DB)).Methods("POST")
+
 	messageRouter := v1Router.PathPrefix("/message").Subrouter()
 
 	messageRouter.HandleFunc("/{id}", middlewares.AuthMiddleware(s.GetMessage, s.DB)).Methods("GET")

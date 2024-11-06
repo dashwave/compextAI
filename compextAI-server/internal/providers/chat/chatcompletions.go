@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/burnerlee/compextAI/models"
+	"gorm.io/gorm"
 )
 
 var (
@@ -17,6 +18,7 @@ type ChatCompletionsProvider interface {
 	GetProviderOwner() string
 	GetProviderModel() string
 	GetProviderIdentifier() string
+	ExecuteThread(db *gorm.DB, apiKey string, thread *models.Thread, threadExecutionParams *models.ThreadExecutionParams) (int, interface{}, error)
 }
 
 type ChatCompletionsProvider_Enum string
@@ -36,8 +38,8 @@ func (r *ChatCompletionsProviderRegistry) register(provider ChatCompletionsProvi
 	r.providers[providerIdentifier] = provider
 }
 
-func (r *ChatCompletionsProviderRegistry) get(providerIdentifier ChatCompletionsProvider_Enum) (ChatCompletionsProvider, error) {
-	provider, ok := r.providers[providerIdentifier]
+func GetChatCompletionsProvider(providerIdentifier string) (ChatCompletionsProvider, error) {
+	provider, ok := chatCompletionsProviderRegistry.providers[ChatCompletionsProvider_Enum(providerIdentifier)]
 	if !ok {
 		return nil, fmt.Errorf("provider %s not found", providerIdentifier)
 	}
