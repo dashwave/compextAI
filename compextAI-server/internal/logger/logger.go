@@ -1,6 +1,10 @@
 package logger
 
-import "github.com/sirupsen/logrus"
+import (
+	"net/http"
+
+	"github.com/sirupsen/logrus"
+)
 
 var logger *logrus.Logger
 
@@ -13,4 +17,11 @@ func init() {
 
 func GetLogger() *logrus.Logger {
 	return logger
+}
+
+func LoggerMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		logger.Info("Request: ", r.Method, r.URL.Path)
+		next.ServeHTTP(w, r)
+	})
 }

@@ -29,6 +29,9 @@ func InitServer(ctx context.Context) (*Server, error) {
 
 	s.Router = mux.NewRouter()
 
+	// add logger middleware to the router
+	s.Router.Use(logger.LoggerMiddleware)
+
 	// initialize the database
 	logger.GetLogger().Info("Initializing database")
 	s.DB, err = InitDB()
