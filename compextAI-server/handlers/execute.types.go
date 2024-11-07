@@ -36,14 +36,14 @@ type ThreadExecutionStatusResponse struct {
 }
 
 type RerunThreadExecutionRequest struct {
-	ThreadExecutionParamID  string `json:"thread_execution_param_id"`
-	SystemPrompt            string `json:"system_prompt"`
-	AppendAssistantResponse bool   `json:"append_assistant_response"`
+	ThreadExecutionParamTemplateID string `json:"thread_execution_param_template_id"`
+	SystemPrompt                   string `json:"system_prompt"`
+	AppendAssistantResponse        bool   `json:"append_assistant_response"`
 }
 
 func (r *RerunThreadExecutionRequest) Validate() error {
-	if r.ThreadExecutionParamID == "" {
-		return fmt.Errorf("thread_execution_param_id is required")
+	if r.ThreadExecutionParamTemplateID == "" {
+		return fmt.Errorf("thread_execution_param_template_id is required")
 	}
 	return nil
 }

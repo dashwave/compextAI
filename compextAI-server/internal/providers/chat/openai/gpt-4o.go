@@ -139,7 +139,7 @@ func (d *gpt4oExecutionData) Validate() error {
 	return nil
 }
 
-func (g *GPT4O) ExecuteThread(db *gorm.DB, user *models.User, messages []*models.Message, threadExecutionParams *models.ThreadExecutionParams, threadExecutionIdentifier string) (int, interface{}, error) {
+func (g *GPT4O) ExecuteThread(db *gorm.DB, user *models.User, messages []*models.Message, threadExecutionParamsTemplate *models.ThreadExecutionParamsTemplate, threadExecutionIdentifier string) (int, interface{}, error) {
 	systemPrompt := ""
 
 	modelMessages := make([]gpt4oOpenAIMessage, 0)
@@ -157,8 +157,8 @@ func (g *GPT4O) ExecuteThread(db *gorm.DB, user *models.User, messages []*models
 	}
 
 	// override the system prompt if it is provided for execution
-	if threadExecutionParams.Template.SystemPrompt != "" {
-		systemPrompt = threadExecutionParams.Template.SystemPrompt
+	if threadExecutionParamsTemplate.SystemPrompt != "" {
+		systemPrompt = threadExecutionParamsTemplate.SystemPrompt
 	}
 
 	// add the system prompt to the beginning of the messages thread if it is provided
@@ -169,24 +169,24 @@ func (g *GPT4O) ExecuteThread(db *gorm.DB, user *models.User, messages []*models
 		}}, modelMessages...)
 	}
 
-	if threadExecutionParams.Template.Temperature == 0 {
-		threadExecutionParams.Template.Temperature = DEFAULT_TEMPERATURE
+	if threadExecutionParamsTemplate.Temperature == 0 {
+		threadExecutionParamsTemplate.Temperature = DEFAULT_TEMPERATURE
 	}
-	if threadExecutionParams.Template.MaxCompletionTokens == 0 {
-		threadExecutionParams.Template.MaxCompletionTokens = DEFAULT_MAX_COMPLETION_TOKENS
+	if threadExecutionParamsTemplate.MaxCompletionTokens == 0 {
+		threadExecutionParamsTemplate.MaxCompletionTokens = DEFAULT_MAX_COMPLETION_TOKENS
 	}
-	if threadExecutionParams.Template.Timeout == 0 {
-		threadExecutionParams.Template.Timeout = DEFAULT_TIMEOUT
+	if threadExecutionParamsTemplate.Timeout == 0 {
+		threadExecutionParamsTemplate.Timeout = DEFAULT_TIMEOUT
 	}
 
 	executionData := gpt4oExecutionData{
 		APIKey:              user.OpenAIKey,
 		Model:               g.model,
 		Messages:            modelMessages,
-		Temperature:         threadExecutionParams.Template.Temperature,
-		MaxCompletionTokens: threadExecutionParams.Template.MaxCompletionTokens,
-		Timeout:             threadExecutionParams.Template.Timeout,
-		ResponseFormat:      threadExecutionParams.Template.ResponseFormat,
+		Temperature:         threadExecutionParamsTemplate.Temperature,
+		MaxCompletionTokens: threadExecutionParamsTemplate.MaxCompletionTokens,
+		Timeout:             threadExecutionParamsTemplate.Timeout,
+		ResponseFormat:      threadExecutionParamsTemplate.ResponseFormat,
 	}
 
 	if err := executionData.Validate(); err != nil {

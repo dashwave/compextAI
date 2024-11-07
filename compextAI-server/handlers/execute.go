@@ -50,13 +50,19 @@ func (s *Server) ExecuteThread(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	threadExecutionParam, err := models.GetThreadExecutionParamsByID(s.DB, request.ThreadExecutionParamID)
+	if err != nil {
+		responses.Error(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
 	threadExecution, err := controllers.ExecuteThread(s.DB, &controllers.ExecuteThreadRequest{
-		UserID:                      uint(userID),
-		ThreadID:                    threadID,
-		ThreadExecutionParamID:      request.ThreadExecutionParamID,
-		AppendAssistantResponse:     request.AppendAssistantResponse,
-		ThreadExecutionSystemPrompt: request.ThreadExecutionSystemPrompt,
-		Messages:                    request.Messages,
+		UserID:                         uint(userID),
+		ThreadID:                       threadID,
+		ThreadExecutionParamTemplateID: threadExecutionParam.TemplateID,
+		AppendAssistantResponse:        request.AppendAssistantResponse,
+		ThreadExecutionSystemPrompt:    request.ThreadExecutionSystemPrompt,
+		Messages:                       request.Messages,
 	})
 	if err != nil {
 		responses.Error(w, http.StatusInternalServerError, err.Error())
@@ -183,11 +189,11 @@ func (s *Server) RerunThreadExecution(w http.ResponseWriter, r *http.Request) {
 	}
 
 	threadExecution, err := controllers.RerunThreadExecution(s.DB, &controllers.RerunThreadExecutionRequest{
-		UserID:                  uint(userID),
-		ExecutionID:             executionID,
-		ThreadExecutionParamID:  request.ThreadExecutionParamID,
-		SystemPrompt:            request.SystemPrompt,
-		AppendAssistantResponse: request.AppendAssistantResponse,
+		UserID:                         uint(userID),
+		ExecutionID:                    executionID,
+		ThreadExecutionParamTemplateID: request.ThreadExecutionParamTemplateID,
+		SystemPrompt:                   request.SystemPrompt,
+		AppendAssistantResponse:        request.AppendAssistantResponse,
 	})
 	if err != nil {
 		responses.Error(w, http.StatusInternalServerError, err.Error())

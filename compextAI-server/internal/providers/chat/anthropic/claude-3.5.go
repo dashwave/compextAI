@@ -131,7 +131,7 @@ func (d *claude35ExecutionData) Validate() error {
 	return nil
 }
 
-func (g *Claude35) ExecuteThread(db *gorm.DB, user *models.User, messages []*models.Message, threadExecutionParams *models.ThreadExecutionParams, threadExecutionIdentifier string) (int, interface{}, error) {
+func (g *Claude35) ExecuteThread(db *gorm.DB, user *models.User, messages []*models.Message, threadExecutionParamsTemplate *models.ThreadExecutionParamsTemplate, threadExecutionIdentifier string) (int, interface{}, error) {
 	systemPrompt := ""
 
 	modelMessages := make([]claude35Message, 0)
@@ -149,27 +149,27 @@ func (g *Claude35) ExecuteThread(db *gorm.DB, user *models.User, messages []*mod
 	}
 
 	// override the system prompt if it is provided for execution
-	if threadExecutionParams.Template.SystemPrompt != "" {
-		systemPrompt = threadExecutionParams.Template.SystemPrompt
+	if threadExecutionParamsTemplate.SystemPrompt != "" {
+		systemPrompt = threadExecutionParamsTemplate.SystemPrompt
 	}
 
-	if threadExecutionParams.Template.Temperature == 0 {
-		threadExecutionParams.Template.Temperature = DEFAULT_TEMPERATURE
+	if threadExecutionParamsTemplate.Temperature == 0 {
+		threadExecutionParamsTemplate.Temperature = DEFAULT_TEMPERATURE
 	}
-	if threadExecutionParams.Template.MaxTokens == 0 {
-		threadExecutionParams.Template.MaxTokens = DEFAULT_MAX_TOKENS
+	if threadExecutionParamsTemplate.MaxTokens == 0 {
+		threadExecutionParamsTemplate.MaxTokens = DEFAULT_MAX_TOKENS
 	}
-	if threadExecutionParams.Template.Timeout == 0 {
-		threadExecutionParams.Template.Timeout = DEFAULT_TIMEOUT
+	if threadExecutionParamsTemplate.Timeout == 0 {
+		threadExecutionParamsTemplate.Timeout = DEFAULT_TIMEOUT
 	}
 
 	executionData := claude35ExecutionData{
 		APIKey:       user.AnthropicKey,
 		Model:        g.model,
 		Messages:     modelMessages,
-		Temperature:  threadExecutionParams.Template.Temperature,
-		MaxTokens:    threadExecutionParams.Template.MaxTokens,
-		Timeout:      threadExecutionParams.Template.Timeout,
+		Temperature:  threadExecutionParamsTemplate.Temperature,
+		MaxTokens:    threadExecutionParamsTemplate.MaxTokens,
+		Timeout:      threadExecutionParamsTemplate.Timeout,
 		SystemPrompt: systemPrompt,
 	}
 

@@ -13,20 +13,20 @@ import (
 )
 
 func ExecuteThread(db *gorm.DB, req *ExecuteThreadRequest) (interface{}, error) {
-	threadExecutionParams, err := models.GetThreadExecutionParamsByID(db, req.ThreadExecutionParamID)
+	threadExecutionParamsTemplate, err := models.GetThreadExecutionParamsTemplateByID(db, req.ThreadExecutionParamTemplateID)
 	if err != nil {
-		logger.GetLogger().Errorf("Error getting thread execution params: %s: %v", req.ThreadExecutionParamID, err)
+		logger.GetLogger().Errorf("Error getting thread execution params template: %s: %v", req.ThreadExecutionParamTemplateID, err)
 		return nil, err
 	}
 
 	if req.ThreadExecutionSystemPrompt != "" {
 		logger.GetLogger().Infof("Setting thread execution system prompt: %s", req.ThreadExecutionSystemPrompt)
-		threadExecutionParams.Template.SystemPrompt = req.ThreadExecutionSystemPrompt
+		threadExecutionParamsTemplate.SystemPrompt = req.ThreadExecutionSystemPrompt
 	}
 
-	chatProvider, err := chat.GetChatCompletionsProvider(threadExecutionParams.Template.Model)
+	chatProvider, err := chat.GetChatCompletionsProvider(threadExecutionParamsTemplate.Model)
 	if err != nil {
-		logger.GetLogger().Errorf("Error getting chat provider: %s: %v", threadExecutionParams.Template.Model, err)
+		logger.GetLogger().Errorf("Error getting chat provider: %s: %v", threadExecutionParamsTemplate.Model, err)
 		return nil, err
 	}
 
@@ -44,10 +44,10 @@ func ExecuteThread(db *gorm.DB, req *ExecuteThreadRequest) (interface{}, error) 
 	}
 
 	threadExecution := &models.ThreadExecution{
-		UserID:                 req.UserID,
-		ThreadID:               req.ThreadID,
-		ThreadExecutionParamID: req.ThreadExecutionParamID,
-		Status:                 models.ThreadExecutionStatus_IN_PROGRESS,
+		UserID:                         req.UserID,
+		ThreadID:                       req.ThreadID,
+		ThreadExecutionParamTemplateID: req.ThreadExecutionParamTemplateID,
+		Status:                         models.ThreadExecutionStatus_IN_PROGRESS,
 	}
 
 	threadExecution, err = models.CreateThreadExecution(db, threadExecution)
@@ -56,7 +56,7 @@ func ExecuteThread(db *gorm.DB, req *ExecuteThreadRequest) (interface{}, error) 
 		return nil, err
 	}
 
-	go func(p chat.ChatCompletionsProvider, messages []*models.Message, threadExecution models.ThreadExecution, threadExecutionParams models.ThreadExecutionParams, appendAssistantResponse bool) {
+	go func(p chat.ChatCompletionsProvider, messages []*models.Message, threadExecution models.ThreadExecution, threadExecutionParamsTemplate models.ThreadExecutionParamsTemplate, appendAssistantResponse bool) {
 		// get the user
 		user, err := models.GetUserByID(db, threadExecution.UserID)
 		if err != nil {
@@ -65,7 +65,7 @@ func ExecuteThread(db *gorm.DB, req *ExecuteThreadRequest) (interface{}, error) 
 		}
 
 		// execute the thread using the chat provider
-		statusCode, threadExecutionResponse, err := chatProvider.ExecuteThread(db, user, messages, &threadExecutionParams, threadExecution.Identifier)
+		statusCode, threadExecutionResponse, err := chatProvider.ExecuteThread(db, user, messages, &threadExecutionParamsTemplate, threadExecution.Identifier)
 		if err != nil {
 			logger.GetLogger().Errorf("Error executing thread: %s: %v: %v", req.ThreadID, err, threadExecutionResponse)
 			handleThreadExecutionError(db, &threadExecution, fmt.Errorf("error executing thread: %v: %v", err, threadExecutionResponse))
@@ -80,7 +80,7 @@ func ExecuteThread(db *gorm.DB, req *ExecuteThreadRequest) (interface{}, error) 
 
 		logger.GetLogger().Infof("Thread execution completed: %s", req.ThreadID)
 		handleThreadExecutionSuccess(db, p, &threadExecution, threadExecutionResponse, appendAssistantResponse)
-	}(chatProvider, messages, *threadExecution, *threadExecutionParams, req.AppendAssistantResponse)
+	}(chatProvider, messages, *threadExecution, *threadExecutionParamsTemplate, req.AppendAssistantResponse)
 
 	return threadExecution, nil
 }
@@ -149,11 +149,11 @@ func RerunThreadExecution(db *gorm.DB, req *RerunThreadExecutionRequest) (interf
 	}
 
 	return ExecuteThread(db, &ExecuteThreadRequest{
-		UserID:                      threadExecution.UserID,
-		ThreadID:                    threadExecution.ThreadID,
-		ThreadExecutionParamID:      req.ThreadExecutionParamID,
-		ThreadExecutionSystemPrompt: req.SystemPrompt,
-		AppendAssistantResponse:     req.AppendAssistantResponse,
-		Messages:                    messages,
+		UserID:                         threadExecution.UserID,
+		ThreadID:                       threadExecution.ThreadID,
+		ThreadExecutionParamTemplateID: req.ThreadExecutionParamTemplateID,
+		ThreadExecutionSystemPrompt:    req.SystemPrompt,
+		AppendAssistantResponse:        req.AppendAssistantResponse,
+		Messages:                       messages,
 	})
 }
