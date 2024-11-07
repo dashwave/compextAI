@@ -149,27 +149,27 @@ func (g *Claude35) ExecuteThread(db *gorm.DB, user *models.User, messages []*mod
 	}
 
 	// override the system prompt if it is provided for execution
-	if threadExecutionParams.SystemPrompt != "" {
-		systemPrompt = threadExecutionParams.SystemPrompt
+	if threadExecutionParams.Template.SystemPrompt != "" {
+		systemPrompt = threadExecutionParams.Template.SystemPrompt
 	}
 
-	if threadExecutionParams.Temperature == 0 {
-		threadExecutionParams.Temperature = DEFAULT_TEMPERATURE
+	if threadExecutionParams.Template.Temperature == 0 {
+		threadExecutionParams.Template.Temperature = DEFAULT_TEMPERATURE
 	}
-	if threadExecutionParams.MaxTokens == 0 {
-		threadExecutionParams.MaxTokens = DEFAULT_MAX_TOKENS
+	if threadExecutionParams.Template.MaxTokens == 0 {
+		threadExecutionParams.Template.MaxTokens = DEFAULT_MAX_TOKENS
 	}
-	if threadExecutionParams.Timeout == 0 {
-		threadExecutionParams.Timeout = DEFAULT_TIMEOUT
+	if threadExecutionParams.Template.Timeout == 0 {
+		threadExecutionParams.Template.Timeout = DEFAULT_TIMEOUT
 	}
 
 	executionData := claude35ExecutionData{
 		APIKey:       user.AnthropicKey,
 		Model:        g.model,
 		Messages:     modelMessages,
-		Temperature:  threadExecutionParams.Temperature,
-		MaxTokens:    threadExecutionParams.MaxTokens,
-		Timeout:      threadExecutionParams.Timeout,
+		Temperature:  threadExecutionParams.Template.Temperature,
+		MaxTokens:    threadExecutionParams.Template.MaxTokens,
+		Timeout:      threadExecutionParams.Template.Timeout,
 		SystemPrompt: systemPrompt,
 	}
 

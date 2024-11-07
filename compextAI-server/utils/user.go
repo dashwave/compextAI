@@ -49,3 +49,12 @@ func CheckThreadExecutionAccess(db *gorm.DB, executionID string, userID uint) (b
 
 	return threadExecution.UserID == userID, nil
 }
+
+func CheckThreadExecutionParamsTemplateAccess(db *gorm.DB, templateID string, userID uint) (bool, error) {
+	threadExecutionParamsTemplate, err := models.GetThreadExecutionParamsTemplateByID(db, templateID)
+	if err != nil {
+		return false, err
+	}
+
+	return threadExecutionParamsTemplate.UserID == userID, nil
+}

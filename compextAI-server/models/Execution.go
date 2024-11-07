@@ -33,9 +33,17 @@ type ThreadExecution struct {
 // ThreadExecutionParams are the parameters for executing a thread
 type ThreadExecutionParams struct {
 	Base
+	UserID      uint                          `json:"user_id"`
+	Name        string                        `json:"name"`
+	Environment string                        `json:"environment"`
+	TemplateID  string                        `json:"template_id"`
+	Template    ThreadExecutionParamsTemplate `json:"template" gorm:"foreignKey:TemplateID;references:Identifier"`
+}
+
+type ThreadExecutionParamsTemplate struct {
+	Base
 	UserID              uint            `json:"user_id"`
 	Name                string          `json:"name"`
-	Environment         string          `json:"environment"`
 	Model               string          `json:"model"`
 	Temperature         float64         `json:"temperature"`
 	Timeout             int             `json:"timeout"`
@@ -91,7 +99,7 @@ func GetThreadExecutionByID(db *gorm.DB, executionID string) (*ThreadExecution, 
 
 func GetThreadExecutionParamsByID(db *gorm.DB, threadExecutionParamsID string) (*ThreadExecutionParams, error) {
 	var threadExecutionParams ThreadExecutionParams
-	if err := db.Where("identifier = ?", threadExecutionParamsID).First(&threadExecutionParams).Error; err != nil {
+	if err := db.Where("identifier = ?", threadExecutionParamsID).Preload("Template").First(&threadExecutionParams).Error; err != nil {
 		return nil, err
 	}
 	return &threadExecutionParams, nil
@@ -99,7 +107,8 @@ func GetThreadExecutionParamsByID(db *gorm.DB, threadExecutionParamsID string) (
 
 func GetAllThreadExecutionParams(db *gorm.DB, userID uint) ([]ThreadExecutionParams, error) {
 	var threadExecutionParams []ThreadExecutionParams
-	if err := db.Where("user_id = ?", userID).Find(&threadExecutionParams).Error; err != nil {
+	// preload the template
+	if err := db.Where("user_id = ?", userID).Preload("Template").Find(&threadExecutionParams).Error; err != nil {
 		return nil, err
 	}
 	return threadExecutionParams, nil
@@ -115,46 +124,88 @@ func CreateThreadExecutionParams(db *gorm.DB, threadExecutionParams *ThreadExecu
 	return threadExecutionParams, nil
 }
 
-func UpdateThreadExecutionParams(db *gorm.DB, threadExecutionParams *ThreadExecutionParams) error {
-	updateData := make(map[string]interface{})
-	if threadExecutionParams.Model != "" {
-		updateData["model"] = threadExecutionParams.Model
-	}
-	if threadExecutionParams.Temperature != 0 {
-		updateData["temperature"] = threadExecutionParams.Temperature
-	}
-	if threadExecutionParams.Timeout != 0 {
-		updateData["timeout"] = threadExecutionParams.Timeout
-	}
-	if threadExecutionParams.MaxTokens != 0 {
-		updateData["max_tokens"] = threadExecutionParams.MaxTokens
-	}
-	if threadExecutionParams.MaxCompletionTokens != 0 {
-		updateData["max_completion_tokens"] = threadExecutionParams.MaxCompletionTokens
-	}
-	if threadExecutionParams.MaxOutputTokens != 0 {
-		updateData["max_output_tokens"] = threadExecutionParams.MaxOutputTokens
-	}
-	if threadExecutionParams.SystemPrompt != "" {
-		updateData["system_prompt"] = threadExecutionParams.SystemPrompt
-	}
-	if threadExecutionParams.ResponseFormat != nil {
-		updateData["response_format"] = threadExecutionParams.ResponseFormat
-	}
-	if threadExecutionParams.TopP != 0 {
-		updateData["top_p"] = threadExecutionParams.TopP
-	}
-	return db.Model(&ThreadExecutionParams{}).Where("identifier = ?", threadExecutionParams.Identifier).Updates(updateData).Error
-}
-
 func DeleteThreadExecutionParams(db *gorm.DB, threadExecutionParamsID string) error {
 	return db.Delete(&ThreadExecutionParams{}, "identifier = ?", threadExecutionParamsID).Error
 }
 
 func GetThreadExecutionParamsByUserIDAndNameAndEnvironment(db *gorm.DB, userID uint, name string, environment string) (*ThreadExecutionParams, error) {
 	var threadExecutionParams ThreadExecutionParams
-	if err := db.Where("user_id = ? AND name = ? AND environment = ?", userID, name, environment).First(&threadExecutionParams).Error; err != nil {
+	if err := db.Where("user_id = ? AND name = ? AND environment = ?", userID, name, environment).Preload("Template").First(&threadExecutionParams).Error; err != nil {
 		return nil, err
 	}
 	return &threadExecutionParams, nil
+}
+
+func CreateThreadExecutionParamsTemplate(db *gorm.DB, threadExecutionParamsTemplate *ThreadExecutionParamsTemplate) (*ThreadExecutionParamsTemplate, error) {
+	threadExecutionParamsTemplateIDUniqueIdentifier := uuid.New().String()
+	threadExecutionParamsTemplateID := fmt.Sprintf("%s%s", constants.THREAD_EXECUTION_PARAMS_TEMPLATE_ID_PREFIX, threadExecutionParamsTemplateIDUniqueIdentifier)
+	threadExecutionParamsTemplate.Identifier = threadExecutionParamsTemplateID
+	if err := db.Create(threadExecutionParamsTemplate).Error; err != nil {
+		return nil, err
+	}
+	return threadExecutionParamsTemplate, nil
+}
+
+func DeleteThreadExecutionParamsTemplate(db *gorm.DB, threadExecutionParamsTemplateID string) error {
+	return db.Delete(&ThreadExecutionParamsTemplate{}, "identifier = ?", threadExecutionParamsTemplateID).Error
+}
+
+func GetThreadExecutionParamsTemplateByID(db *gorm.DB, threadExecutionParamsTemplateID string) (*ThreadExecutionParamsTemplate, error) {
+	var threadExecutionParamsTemplate ThreadExecutionParamsTemplate
+	if err := db.Where("identifier = ?", threadExecutionParamsTemplateID).First(&threadExecutionParamsTemplate).Error; err != nil {
+		return nil, err
+	}
+	return &threadExecutionParamsTemplate, nil
+}
+
+func UpdateThreadExecutionParamsTemplate(db *gorm.DB, threadExecutionParamsTemplate *ThreadExecutionParamsTemplate) error {
+	updateData := make(map[string]interface{})
+	if threadExecutionParamsTemplate.Name != "" {
+		updateData["name"] = threadExecutionParamsTemplate.Name
+	}
+	if threadExecutionParamsTemplate.Model != "" {
+		updateData["model"] = threadExecutionParamsTemplate.Model
+	}
+	if threadExecutionParamsTemplate.Temperature != 0 {
+		updateData["temperature"] = threadExecutionParamsTemplate.Temperature
+	}
+	if threadExecutionParamsTemplate.Timeout != 0 {
+		updateData["timeout"] = threadExecutionParamsTemplate.Timeout
+	}
+	if threadExecutionParamsTemplate.MaxTokens != 0 {
+		updateData["max_tokens"] = threadExecutionParamsTemplate.MaxTokens
+	}
+	if threadExecutionParamsTemplate.MaxCompletionTokens != 0 {
+		updateData["max_completion_tokens"] = threadExecutionParamsTemplate.MaxCompletionTokens
+	}
+	if threadExecutionParamsTemplate.TopP != 0 {
+		updateData["top_p"] = threadExecutionParamsTemplate.TopP
+	}
+	if threadExecutionParamsTemplate.MaxOutputTokens != 0 {
+		updateData["max_output_tokens"] = threadExecutionParamsTemplate.MaxOutputTokens
+	}
+	if threadExecutionParamsTemplate.ResponseFormat != nil {
+		updateData["response_format"] = threadExecutionParamsTemplate.ResponseFormat
+	}
+	if threadExecutionParamsTemplate.SystemPrompt != "" {
+		updateData["system_prompt"] = threadExecutionParamsTemplate.SystemPrompt
+	}
+
+	return db.Model(&ThreadExecutionParamsTemplate{}).Where("identifier = ?", threadExecutionParamsTemplate.Identifier).Updates(updateData).Error
+}
+
+func GetAllThreadExecutionParamsTemplates(db *gorm.DB, userID uint) ([]ThreadExecutionParamsTemplate, error) {
+	var threadExecutionParamsTemplates []ThreadExecutionParamsTemplate
+	if err := db.Where("user_id = ?", userID).Find(&threadExecutionParamsTemplates).Error; err != nil {
+		return nil, err
+	}
+	return threadExecutionParamsTemplates, nil
+}
+
+func GetThreadExecutionParamsByTemplateID(db *gorm.DB, templateID string) ([]ThreadExecutionParams, error) {
+	var threadExecutionParams []ThreadExecutionParams
+	if err := db.Where("template_id = ?", templateID).Find(&threadExecutionParams).Error; err != nil {
+		return nil, err
+	}
+	return threadExecutionParams, nil
 }

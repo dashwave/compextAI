@@ -38,7 +38,13 @@ func (s *Server) InitRoutes() {
 	threadExecutionParamsRouter.HandleFunc("/fetchall", middlewares.AuthMiddleware(s.ListThreadExecutionParams, s.DB)).Methods("GET")
 	threadExecutionParamsRouter.HandleFunc("/create", middlewares.AuthMiddleware(s.CreateThreadExecutionParams, s.DB)).Methods("POST")
 	threadExecutionParamsRouter.HandleFunc("/fetch", middlewares.AuthMiddleware(s.GetThreadExecutionParamsByNameAndEnv, s.DB)).Methods("POST")
-	threadExecutionParamsRouter.HandleFunc("/update", middlewares.AuthMiddleware(s.UpdateThreadExecutionParams, s.DB)).Methods("PUT")
 	threadExecutionParamsRouter.HandleFunc("/delete", middlewares.AuthMiddleware(s.DeleteThreadExecutionParams, s.DB)).Methods("DELETE")
+
+	threadExecutionParamsTemplateRouter := v1Router.PathPrefix("/execparamstemplate").Subrouter()
+	threadExecutionParamsTemplateRouter.HandleFunc("", middlewares.AuthMiddleware(s.ListThreadExecutionParamsTemplates, s.DB)).Methods("GET")
+	threadExecutionParamsTemplateRouter.HandleFunc("", middlewares.AuthMiddleware(s.CreateThreadExecutionParamsTemplate, s.DB)).Methods("POST")
+	threadExecutionParamsTemplateRouter.HandleFunc("/{id}", middlewares.AuthMiddleware(s.GetThreadExecutionParamsTemplateByID, s.DB)).Methods("GET")
+	threadExecutionParamsTemplateRouter.HandleFunc("/{id}", middlewares.AuthMiddleware(s.DeleteThreadExecutionParamsTemplate, s.DB)).Methods("DELETE")
+	threadExecutionParamsTemplateRouter.HandleFunc("/{id}", middlewares.AuthMiddleware(s.UpdateThreadExecutionParamsTemplate, s.DB)).Methods("PUT")
 
 }

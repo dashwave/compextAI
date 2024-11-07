@@ -21,12 +21,12 @@ func ExecuteThread(db *gorm.DB, req *ExecuteThreadRequest) (interface{}, error) 
 
 	if req.ThreadExecutionSystemPrompt != "" {
 		logger.GetLogger().Infof("Setting thread execution system prompt: %s", req.ThreadExecutionSystemPrompt)
-		threadExecutionParams.SystemPrompt = req.ThreadExecutionSystemPrompt
+		threadExecutionParams.Template.SystemPrompt = req.ThreadExecutionSystemPrompt
 	}
 
-	chatProvider, err := chat.GetChatCompletionsProvider(threadExecutionParams.Model)
+	chatProvider, err := chat.GetChatCompletionsProvider(threadExecutionParams.Template.Model)
 	if err != nil {
-		logger.GetLogger().Errorf("Error getting chat provider: %s: %v", threadExecutionParams.Model, err)
+		logger.GetLogger().Errorf("Error getting chat provider: %s: %v", threadExecutionParams.Template.Model, err)
 		return nil, err
 	}
 

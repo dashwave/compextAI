@@ -157,8 +157,8 @@ func (g *GPT4O) ExecuteThread(db *gorm.DB, user *models.User, messages []*models
 	}
 
 	// override the system prompt if it is provided for execution
-	if threadExecutionParams.SystemPrompt != "" {
-		systemPrompt = threadExecutionParams.SystemPrompt
+	if threadExecutionParams.Template.SystemPrompt != "" {
+		systemPrompt = threadExecutionParams.Template.SystemPrompt
 	}
 
 	// add the system prompt to the beginning of the messages thread if it is provided
@@ -170,24 +170,24 @@ func (g *GPT4O) ExecuteThread(db *gorm.DB, user *models.User, messages []*models
 		}}, modelMessages...)
 	}
 
-	if threadExecutionParams.Temperature == 0 {
-		threadExecutionParams.Temperature = DEFAULT_TEMPERATURE
+	if threadExecutionParams.Template.Temperature == 0 {
+		threadExecutionParams.Template.Temperature = DEFAULT_TEMPERATURE
 	}
-	if threadExecutionParams.MaxCompletionTokens == 0 {
-		threadExecutionParams.MaxCompletionTokens = DEFAULT_MAX_COMPLETION_TOKENS
+	if threadExecutionParams.Template.MaxCompletionTokens == 0 {
+		threadExecutionParams.Template.MaxCompletionTokens = DEFAULT_MAX_COMPLETION_TOKENS
 	}
-	if threadExecutionParams.Timeout == 0 {
-		threadExecutionParams.Timeout = DEFAULT_TIMEOUT
+	if threadExecutionParams.Template.Timeout == 0 {
+		threadExecutionParams.Template.Timeout = DEFAULT_TIMEOUT
 	}
 
 	executionData := gpt4oExecutionData{
 		APIKey:              user.OpenAIKey,
 		Model:               g.model,
 		Messages:            modelMessages,
-		Temperature:         threadExecutionParams.Temperature,
-		MaxCompletionTokens: threadExecutionParams.MaxCompletionTokens,
-		Timeout:             threadExecutionParams.Timeout,
-		ResponseFormat:      threadExecutionParams.ResponseFormat,
+		Temperature:         threadExecutionParams.Template.Temperature,
+		MaxCompletionTokens: threadExecutionParams.Template.MaxCompletionTokens,
+		Timeout:             threadExecutionParams.Template.Timeout,
+		ResponseFormat:      threadExecutionParams.Template.ResponseFormat,
 	}
 
 	if err := executionData.Validate(); err != nil {
