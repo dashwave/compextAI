@@ -126,3 +126,34 @@ func handleThreadExecutionSuccess(db *gorm.DB, p chat.ChatCompletionsProvider, t
 	threadExecution.ExecutionResponseMetadata = message.Metadata
 	models.UpdateThreadExecution(db, threadExecution)
 }
+
+func RerunThreadExecution(db *gorm.DB, req *RerunThreadExecutionRequest) (interface{}, error) {
+	threadExecution, err := models.GetThreadExecutionByID(db, req.ExecutionID)
+	if err != nil {
+		logger.GetLogger().Errorf("Error getting thread execution: %s: %v", req.ExecutionID, err)
+		return nil, err
+	}
+
+	if threadExecution.InputMessages == nil {
+		return nil, fmt.Errorf("thread execution input messages are nil")
+	}
+
+	var messages []*models.Message
+	if err := json.Unmarshal(threadExecution.InputMessages, &messages); err != nil {
+		logger.GetLogger().Errorf("Error unmarshalling input messages: %v", err)
+		return nil, err
+	}
+
+	if len(messages) == 0 {
+		return nil, fmt.Errorf("thread execution input messages are empty")
+	}
+
+	return ExecuteThread(db, &ExecuteThreadRequest{
+		UserID:                      threadExecution.UserID,
+		ThreadID:                    threadExecution.ThreadID,
+		ThreadExecutionParamID:      req.ThreadExecutionParamID,
+		ThreadExecutionSystemPrompt: req.SystemPrompt,
+		AppendAssistantResponse:     req.AppendAssistantResponse,
+		Messages:                    messages,
+	})
+}

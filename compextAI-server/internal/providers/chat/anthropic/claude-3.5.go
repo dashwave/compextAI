@@ -178,7 +178,7 @@ func (g *Claude35) ExecuteThread(db *gorm.DB, user *models.User, messages []*mod
 		return -1, nil, err
 	}
 
-	if err := base.UpdateThreadExecutionMetadata(db, threadExecutionIdentifier, executionData); err != nil {
+	if err := base.UpdateThreadExecutionMetadata(db, threadExecutionIdentifier, executionData, messages); err != nil {
 		logger.GetLogger().Errorf("Error updating thread execution metadata: %v", err)
 		return -1, nil, err
 	}

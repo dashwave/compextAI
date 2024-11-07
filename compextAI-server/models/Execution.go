@@ -23,11 +23,12 @@ type ThreadExecution struct {
 	ThreadExecutionParamID    string                `json:"thread_execution_param_id"`
 	ThreadExecutionParams     ThreadExecutionParams `json:"thread_execution_params" gorm:"foreignKey:ThreadExecutionParamID;references:Identifier"`
 	Status                    string                `json:"status"`
+	InputMessages             json.RawMessage       `json:"input_messages" gorm:"type:jsonb"`
 	Output                    json.RawMessage       `json:"output" gorm:"type:jsonb"`
 	Content                   string                `json:"content"`
 	Role                      string                `json:"role"`
 	ExecutionResponseMetadata json.RawMessage       `json:"execution_response_metadata" gorm:"type:jsonb"`
-	Metadata                  json.RawMessage       `json:"metadata" gorm:"type:jsonb"`
+	ExecutionRequestMetadata  json.RawMessage       `json:"execution_request_metadata" gorm:"type:jsonb"`
 }
 
 // ThreadExecutionParams are the parameters for executing a thread
@@ -83,8 +84,11 @@ func UpdateThreadExecution(db *gorm.DB, threadExecution *ThreadExecution) error 
 	if threadExecution.ExecutionResponseMetadata != nil {
 		updateData["execution_response_metadata"] = threadExecution.ExecutionResponseMetadata
 	}
-	if threadExecution.Metadata != nil {
-		updateData["metadata"] = threadExecution.Metadata
+	if threadExecution.ExecutionRequestMetadata != nil {
+		updateData["execution_request_metadata"] = threadExecution.ExecutionRequestMetadata
+	}
+	if threadExecution.InputMessages != nil {
+		updateData["input_messages"] = threadExecution.InputMessages
 	}
 	return db.Model(&ThreadExecution{}).Where("identifier = ?", threadExecution.Identifier).Updates(updateData).Error
 }

@@ -194,7 +194,7 @@ func (g *GPT4O) ExecuteThread(db *gorm.DB, user *models.User, messages []*models
 		return -1, nil, err
 	}
 
-	if err := base.UpdateThreadExecutionMetadata(db, threadExecutionIdentifier, executionData); err != nil {
+	if err := base.UpdateThreadExecutionMetadata(db, threadExecutionIdentifier, executionData, messages); err != nil {
 		logger.GetLogger().Errorf("Error updating thread execution metadata: %v", err)
 		return -1, nil, err
 	}

@@ -146,3 +146,53 @@ func (s *Server) GetThreadExecutionResponse(w http.ResponseWriter, r *http.Reque
 		"role":     threadExecution.Role,
 	})
 }
+
+func (s *Server) RerunThreadExecution(w http.ResponseWriter, r *http.Request) {
+	executionID := mux.Vars(r)["id"]
+
+	if executionID == "" {
+		responses.Error(w, http.StatusBadRequest, "id parameter is required")
+		return
+	}
+
+	userID, err := utils.GetUserIDFromRequest(r)
+	if err != nil {
+		responses.Error(w, http.StatusUnauthorized, err.Error())
+		return
+	}
+
+	hasAccess, err := utils.CheckThreadExecutionAccess(s.DB, executionID, uint(userID))
+	if err != nil {
+		responses.Error(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	if !hasAccess {
+		responses.Error(w, http.StatusForbidden, "You are not authorized to rerun this thread execution")
+		return
+	}
+
+	var request RerunThreadExecutionRequest
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		responses.Error(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	if err := request.Validate(); err != nil {
+		responses.Error(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	threadExecution, err := controllers.RerunThreadExecution(s.DB, &controllers.RerunThreadExecutionRequest{
+		UserID:                  uint(userID),
+		ExecutionID:             executionID,
+		ThreadExecutionParamID:  request.ThreadExecutionParamID,
+		SystemPrompt:            request.SystemPrompt,
+		AppendAssistantResponse: request.AppendAssistantResponse,
+	})
+	if err != nil {
+		responses.Error(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	responses.JSON(w, http.StatusOK, threadExecution)
+}

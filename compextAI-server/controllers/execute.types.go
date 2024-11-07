@@ -14,3 +14,11 @@ type ExecuteThreadRequest struct {
 type ExecuteThreadResponse struct {
 	ThreadExecutionID string
 }
+
+type RerunThreadExecutionRequest struct {
+	UserID                  uint
+	ExecutionID             string
+	ThreadExecutionParamID  string
+	SystemPrompt            string
+	AppendAssistantResponse bool
+}
