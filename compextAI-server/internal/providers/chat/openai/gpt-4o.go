@@ -163,7 +163,6 @@ func (g *GPT4O) ExecuteThread(db *gorm.DB, user *models.User, messages []*models
 
 	// add the system prompt to the beginning of the messages thread if it is provided
 	if systemPrompt != "" {
-		logger.GetLogger().Infof("Executing thread with system prompt: %s", systemPrompt)
 		modelMessages = append([]gpt4oOpenAIMessage{{
 			Role:    "system",
 			Content: systemPrompt,
