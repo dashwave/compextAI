@@ -47,5 +47,5 @@ func CheckThreadExecutionAccess(db *gorm.DB, executionID string, userID uint) (b
 		return false, err
 	}
 
-	return threadExecution.Thread.UserID == userID, nil
+	return threadExecution.UserID == userID, nil
 }

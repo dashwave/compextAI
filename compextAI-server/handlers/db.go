@@ -1,9 +1,11 @@
 package handlers
 
 import (
+	"errors"
 	"fmt"
 	"os"
 
+	"github.com/burnerlee/compextAI/constants"
 	"github.com/burnerlee/compextAI/internal/logger"
 	"github.com/burnerlee/compextAI/models"
 	"github.com/joho/godotenv"
@@ -41,5 +43,44 @@ func InitDB() (*gorm.DB, error) {
 }
 
 func MigrateDB(db *gorm.DB) error {
-	return db.AutoMigrate(&models.Message{}, &models.Thread{}, &models.User{}, &models.ThreadExecution{}, &models.ThreadExecutionParams{})
+	if err := db.AutoMigrate(&models.Message{}, &models.Thread{}, &models.User{}, &models.ThreadExecution{}, &models.ThreadExecutionParams{}); err != nil {
+		return fmt.Errorf("failed to migrate database: %w", err)
+	}
+
+	adminUser, err := models.GetUserByUsername(db, "admin")
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			adminUser = &models.User{
+				Base: models.Base{
+					Identifier: "admin",
+				},
+				Username: "admin",
+			}
+			if err := db.Create(adminUser).Error; err != nil {
+				return fmt.Errorf("failed to create admin user: %w", err)
+			}
+		} else {
+			return fmt.Errorf("failed to get admin user: %w", err)
+		}
+	}
+
+	_, err = models.GetThread(db, constants.THREAD_IDENTIFIER_FOR_NULL_THREAD)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			nullThread := &models.Thread{
+				Base: models.Base{
+					Identifier: constants.THREAD_IDENTIFIER_FOR_NULL_THREAD,
+				},
+				UserID: adminUser.ID,
+				User:   *adminUser,
+			}
+			if err := db.Create(nullThread).Error; err != nil {
+				return fmt.Errorf("failed to create null thread: %w", err)
+			}
+		} else {
+			return fmt.Errorf("failed to get null thread: %w", err)
+		}
+	}
+
+	return nil
 }

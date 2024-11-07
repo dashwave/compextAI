@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/burnerlee/compextAI/constants"
 	"github.com/burnerlee/compextAI/controllers"
 	"github.com/burnerlee/compextAI/models"
 	"github.com/burnerlee/compextAI/utils"
@@ -26,27 +27,36 @@ func (s *Server) ExecuteThread(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if err := request.Validate(threadID); err != nil {
+		responses.Error(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
 	userID, err := utils.GetUserIDFromRequest(r)
 	if err != nil {
 		responses.Error(w, http.StatusUnauthorized, err.Error())
 		return
 	}
 
-	hasAccess, err := utils.CheckThreadAccess(s.DB, threadID, uint(userID))
-	if err != nil {
-		responses.Error(w, http.StatusInternalServerError, err.Error())
-		return
-	}
-	if !hasAccess {
-		responses.Error(w, http.StatusForbidden, "You are not authorized to execute this thread")
-		return
+	if threadID != constants.THREAD_IDENTIFIER_FOR_NULL_THREAD {
+		hasAccess, err := utils.CheckThreadAccess(s.DB, threadID, uint(userID))
+		if err != nil {
+			responses.Error(w, http.StatusInternalServerError, err.Error())
+			return
+		}
+		if !hasAccess {
+			responses.Error(w, http.StatusForbidden, "You are not authorized to execute this thread")
+			return
+		}
 	}
 
 	threadExecution, err := controllers.ExecuteThread(s.DB, &controllers.ExecuteThreadRequest{
+		UserID:                      uint(userID),
 		ThreadID:                    threadID,
 		ThreadExecutionParamID:      request.ThreadExecutionParamID,
 		AppendAssistantResponse:     request.AppendAssistantResponse,
 		ThreadExecutionSystemPrompt: request.ThreadExecutionSystemPrompt,
+		Messages:                    request.Messages,
 	})
 	if err != nil {
 		responses.Error(w, http.StatusInternalServerError, err.Error())

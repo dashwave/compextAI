@@ -22,8 +22,8 @@ type Message struct {
 	// FunctionCall FunctionCall      `json:"function_call"`
 }
 
-func GetAllMessages(db *gorm.DB, threadID string) ([]Message, error) {
-	var messages []Message
+func GetAllMessages(db *gorm.DB, threadID string) ([]*Message, error) {
+	var messages []*Message
 	if err := db.Where("thread_id = ?", threadID).Find(&messages).Error; err != nil {
 		return nil, err
 	}

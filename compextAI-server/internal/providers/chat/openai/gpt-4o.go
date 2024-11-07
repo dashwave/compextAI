@@ -139,18 +139,12 @@ func (d *gpt4oExecutionData) Validate() error {
 	return nil
 }
 
-func (g *GPT4O) ExecuteThread(db *gorm.DB, user *models.User, thread *models.Thread, threadExecutionParams *models.ThreadExecutionParams) (int, interface{}, error) {
-	threadMessages, err := thread.GetAllMessages(db)
-	if err != nil {
-		logger.GetLogger().Errorf("Error getting thread messages: %v", err)
-		return -1, nil, err
-	}
-
+func (g *GPT4O) ExecuteThread(db *gorm.DB, user *models.User, messages []*models.Message, threadExecutionParams *models.ThreadExecutionParams, threadExecutionIdentifier string) (int, interface{}, error) {
 	systemPrompt := ""
 
 	modelMessages := make([]gpt4oOpenAIMessage, 0)
-	for _, message := range threadMessages {
-		modelMessage, err := g.ConvertMessageToProviderFormat(&message)
+	for _, message := range messages {
+		modelMessage, err := g.ConvertMessageToProviderFormat(message)
 		if err != nil {
 			logger.GetLogger().Errorf("Error converting message to provider format: %v", err)
 			return -1, nil, err
@@ -198,6 +192,11 @@ func (g *GPT4O) ExecuteThread(db *gorm.DB, user *models.User, thread *models.Thr
 
 	if err := executionData.Validate(); err != nil {
 		logger.GetLogger().Errorf("Error validating execution data: %v", err)
+		return -1, nil, err
+	}
+
+	if err := base.UpdateThreadExecutionMetadata(db, threadExecutionIdentifier, executionData); err != nil {
+		logger.GetLogger().Errorf("Error updating thread execution metadata: %v", err)
 		return -1, nil, err
 	}
 

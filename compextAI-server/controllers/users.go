@@ -11,6 +11,9 @@ import (
 func CreateUser(db *gorm.DB, request *CreateUserRequest) (*models.User, error) {
 
 	user := &models.User{
+		Base: models.Base{
+			Identifier: request.Username,
+		},
 		Username: request.Username,
 		Password: request.Password,
 	}

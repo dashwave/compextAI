@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/burnerlee/compextAI/constants"
 	"github.com/burnerlee/compextAI/internal/logger"
 	"github.com/burnerlee/compextAI/internal/providers/chat"
 	"github.com/burnerlee/compextAI/models"
@@ -29,18 +30,24 @@ func ExecuteThread(db *gorm.DB, req *ExecuteThreadRequest) (interface{}, error) 
 		return nil, err
 	}
 
-	// get the thread
-	thread, err := models.GetThread(db, req.ThreadID)
-	if err != nil {
-		logger.GetLogger().Errorf("Error getting thread: %s: %v", req.ThreadID, err)
-		return nil, err
+	var messages []*models.Message
+	if req.ThreadID != constants.THREAD_IDENTIFIER_FOR_NULL_THREAD {
+		// get the thread
+		threadMessages, err := models.GetAllMessages(db, req.ThreadID)
+		if err != nil {
+			logger.GetLogger().Errorf("Error getting thread: %s: %v", req.ThreadID, err)
+			return nil, err
+		}
+		messages = threadMessages
+	} else {
+		messages = req.Messages
 	}
 
 	threadExecution := &models.ThreadExecution{
+		UserID:                 req.UserID,
 		ThreadID:               req.ThreadID,
 		ThreadExecutionParamID: req.ThreadExecutionParamID,
 		Status:                 models.ThreadExecutionStatus_IN_PROGRESS,
-		Metadata:               json.RawMessage(fmt.Sprintf(`{"system_prompt": "%s"}`, req.ThreadExecutionSystemPrompt)),
 	}
 
 	threadExecution, err = models.CreateThreadExecution(db, threadExecution)
@@ -49,16 +56,16 @@ func ExecuteThread(db *gorm.DB, req *ExecuteThreadRequest) (interface{}, error) 
 		return nil, err
 	}
 
-	go func(p chat.ChatCompletionsProvider, thread models.Thread, threadExecution models.ThreadExecution, threadExecutionParams models.ThreadExecutionParams, appendAssistantResponse bool) {
+	go func(p chat.ChatCompletionsProvider, messages []*models.Message, threadExecution models.ThreadExecution, threadExecutionParams models.ThreadExecutionParams, appendAssistantResponse bool) {
 		// get the user
-		user, err := models.GetUserByID(db, thread.UserID)
+		user, err := models.GetUserByID(db, threadExecution.UserID)
 		if err != nil {
-			logger.GetLogger().Errorf("Error getting user: %d: %v", thread.UserID, err)
+			logger.GetLogger().Errorf("Error getting user: %d: %v", threadExecution.UserID, err)
 			return
 		}
 
 		// execute the thread using the chat provider
-		statusCode, threadExecutionResponse, err := chatProvider.ExecuteThread(db, user, &thread, &threadExecutionParams)
+		statusCode, threadExecutionResponse, err := chatProvider.ExecuteThread(db, user, messages, &threadExecutionParams, threadExecution.Identifier)
 		if err != nil {
 			logger.GetLogger().Errorf("Error executing thread: %s: %v: %v", req.ThreadID, err, threadExecutionResponse)
 			handleThreadExecutionError(db, &threadExecution, fmt.Errorf("error executing thread: %v: %v", err, threadExecutionResponse))
@@ -73,7 +80,7 @@ func ExecuteThread(db *gorm.DB, req *ExecuteThreadRequest) (interface{}, error) 
 
 		logger.GetLogger().Infof("Thread execution completed: %s", req.ThreadID)
 		handleThreadExecutionSuccess(db, p, &threadExecution, threadExecutionResponse, appendAssistantResponse)
-	}(chatProvider, *thread, *threadExecution, *threadExecutionParams, req.AppendAssistantResponse)
+	}(chatProvider, messages, *threadExecution, *threadExecutionParams, req.AppendAssistantResponse)
 
 	return threadExecution, nil
 }

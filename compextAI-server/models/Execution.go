@@ -17,6 +17,7 @@ const (
 
 type ThreadExecution struct {
 	Base
+	UserID                    uint                  `json:"user_id"`
 	ThreadID                  string                `json:"thread_id"`
 	Thread                    Thread                `json:"thread" gorm:"foreignKey:ThreadID;references:Identifier"`
 	ThreadExecutionParamID    string                `json:"thread_execution_param_id"`
