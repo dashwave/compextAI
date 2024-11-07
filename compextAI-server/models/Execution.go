@@ -17,14 +17,16 @@ const (
 
 type ThreadExecution struct {
 	Base
-	ThreadID               string                `json:"thread_id"`
-	Thread                 Thread                `json:"thread" gorm:"foreignKey:ThreadID;references:Identifier"`
-	ThreadExecutionParamID string                `json:"thread_execution_param_id"`
-	ThreadExecutionParams  ThreadExecutionParams `json:"thread_execution_params" gorm:"foreignKey:ThreadExecutionParamID;references:Identifier"`
-	Status                 string                `json:"status"`
-	Output                 string                `json:"output"`
-	ResponseContent        string                `json:"response_content"`
-	ResponseRole           string                `json:"response_role"`
+	ThreadID                  string                `json:"thread_id"`
+	Thread                    Thread                `json:"thread" gorm:"foreignKey:ThreadID;references:Identifier"`
+	ThreadExecutionParamID    string                `json:"thread_execution_param_id"`
+	ThreadExecutionParams     ThreadExecutionParams `json:"thread_execution_params" gorm:"foreignKey:ThreadExecutionParamID;references:Identifier"`
+	Status                    string                `json:"status"`
+	Output                    json.RawMessage       `json:"output" gorm:"type:jsonb"`
+	Content                   string                `json:"content"`
+	Role                      string                `json:"role"`
+	ExecutionResponseMetadata json.RawMessage       `json:"execution_response_metadata" gorm:"type:jsonb"`
+	Metadata                  json.RawMessage       `json:"metadata" gorm:"type:jsonb"`
 }
 
 // ThreadExecutionParams are the parameters for executing a thread
@@ -60,14 +62,20 @@ func UpdateThreadExecution(db *gorm.DB, threadExecution *ThreadExecution) error 
 	if threadExecution.Status != "" {
 		updateData["status"] = threadExecution.Status
 	}
-	if threadExecution.Output != "" {
+	if threadExecution.Output != nil {
 		updateData["output"] = threadExecution.Output
 	}
-	if threadExecution.ResponseContent != "" {
-		updateData["response_content"] = threadExecution.ResponseContent
+	if threadExecution.Content != "" {
+		updateData["content"] = threadExecution.Content
 	}
-	if threadExecution.ResponseRole != "" {
-		updateData["response_role"] = threadExecution.ResponseRole
+	if threadExecution.Role != "" {
+		updateData["role"] = threadExecution.Role
+	}
+	if threadExecution.ExecutionResponseMetadata != nil {
+		updateData["execution_response_metadata"] = threadExecution.ExecutionResponseMetadata
+	}
+	if threadExecution.Metadata != nil {
+		updateData["metadata"] = threadExecution.Metadata
 	}
 	return db.Model(&ThreadExecution{}).Where("identifier = ?", threadExecution.Identifier).Updates(updateData).Error
 }

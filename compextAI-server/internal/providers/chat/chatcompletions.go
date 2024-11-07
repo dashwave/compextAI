@@ -14,7 +14,7 @@ var (
 type ChatCompletionsProvider interface {
 	ValidateMessage(message *models.Message) error
 	ConvertMessageToProviderFormat(message *models.Message) (interface{}, error)
-	ConvertProviderResponseToMessage(response interface{}) (*models.Message, error)
+	ConvertExecutionResponseToMessage(response interface{}) (*models.Message, error)
 	GetProviderOwner() string
 	GetProviderModel() string
 	GetProviderIdentifier() string

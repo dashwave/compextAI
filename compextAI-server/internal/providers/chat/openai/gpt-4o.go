@@ -83,25 +83,34 @@ func (g *GPT4O) ConvertMessageToProviderFormat(message *models.Message) (interfa
 	}, nil
 }
 
-func (g *GPT4O) ConvertProviderResponseToMessage(response interface{}) (*models.Message, error) {
+func (g *GPT4O) ConvertExecutionResponseToMessage(response interface{}) (*models.Message, error) {
 	responseMap, ok := response.(map[string]interface{})
 	if !ok {
 		return nil, fmt.Errorf("response is not a map")
 	}
 
-	content, ok := responseMap["content"].(string)
+	messageChoices := responseMap["choices"].([]interface{})
+	if len(messageChoices) == 0 {
+		return nil, fmt.Errorf("no message choices found")
+	}
+	messageChoice := messageChoices[0].(map[string]interface{})
+	message := messageChoice["message"].(map[string]interface{})
+
+	role, ok := message["role"].(string)
 	if !ok {
-		return nil, fmt.Errorf("response content is not a string")
+		return nil, fmt.Errorf("message role is not a string")
+	}
+	content, ok := message["content"].(string)
+	if !ok {
+		return nil, fmt.Errorf("message content is not a string")
 	}
 
-	metadata, ok := responseMap["metadata"].(map[string]string)
-	if !ok {
-		return nil, fmt.Errorf("response metadata is not a map")
-	}
+	openAIChatCompletionID := responseMap["id"].(string)
+	usage := responseMap["usage"].(map[string]interface{})
 
-	role, ok := responseMap["role"].(string)
-	if !ok {
-		return nil, fmt.Errorf("response role is not a string")
+	metadata := map[string]interface{}{
+		"openai_chat_completion_id": openAIChatCompletionID,
+		"usage":                     usage,
 	}
 
 	metadataJson, err := json.Marshal(metadata)
@@ -137,6 +146,8 @@ func (g *GPT4O) ExecuteThread(db *gorm.DB, user *models.User, thread *models.Thr
 		return -1, nil, err
 	}
 
+	systemPrompt := ""
+
 	modelMessages := make([]gpt4oOpenAIMessage, 0)
 	for _, message := range threadMessages {
 		modelMessage, err := g.ConvertMessageToProviderFormat(&message)
@@ -144,7 +155,25 @@ func (g *GPT4O) ExecuteThread(db *gorm.DB, user *models.User, thread *models.Thr
 			logger.GetLogger().Errorf("Error converting message to provider format: %v", err)
 			return -1, nil, err
 		}
+		if message.Role == "system" {
+			systemPrompt = message.Content
+			continue
+		}
 		modelMessages = append(modelMessages, modelMessage.(gpt4oOpenAIMessage))
+	}
+
+	// override the system prompt if it is provided for execution
+	if threadExecutionParams.SystemPrompt != "" {
+		systemPrompt = threadExecutionParams.SystemPrompt
+	}
+
+	// add the system prompt to the beginning of the messages thread if it is provided
+	if systemPrompt != "" {
+		logger.GetLogger().Infof("Executing thread with system prompt: %s", systemPrompt)
+		modelMessages = append([]gpt4oOpenAIMessage{{
+			Role:    "system",
+			Content: systemPrompt,
+		}}, modelMessages...)
 	}
 
 	if threadExecutionParams.Temperature == 0 {

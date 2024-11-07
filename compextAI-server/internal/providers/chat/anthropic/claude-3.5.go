@@ -1,6 +1,7 @@
 package anthropic
 
 import (
+	"encoding/json"
 	"fmt"
 	"slices"
 	"time"
@@ -74,25 +75,45 @@ func (g *Claude35) ConvertMessageToProviderFormat(message *models.Message) (inte
 	}, nil
 }
 
-func (g *Claude35) ConvertProviderResponseToMessage(response interface{}) (*models.Message, error) {
+func (g *Claude35) ConvertExecutionResponseToMessage(response interface{}) (*models.Message, error) {
 	responseMap, ok := response.(map[string]interface{})
 	if !ok {
 		return nil, fmt.Errorf("response is not a map")
 	}
 
-	content, ok := responseMap["content"].(string)
+	contentChoices := responseMap["content"].([]interface{})
+	if len(contentChoices) == 0 {
+		return nil, fmt.Errorf("no content found")
+	}
+	contentChoice := contentChoices[0].(map[string]interface{})
+
+	content, ok := contentChoice["text"].(string)
 	if !ok {
-		return nil, fmt.Errorf("response content is not a string")
+		return nil, fmt.Errorf("content is not a string")
 	}
 
 	role, ok := responseMap["role"].(string)
 	if !ok {
-		return nil, fmt.Errorf("response role is not a string")
+		return nil, fmt.Errorf("role is not a string")
+	}
+
+	anthropicChatCompletionID := responseMap["id"].(string)
+	usage := responseMap["usage"].(map[string]interface{})
+
+	metadata := map[string]interface{}{
+		"anthropic_chat_completion_id": anthropicChatCompletionID,
+		"usage":                        usage,
+	}
+
+	metadataJson, err := json.Marshal(metadata)
+	if err != nil {
+		return nil, err
 	}
 
 	return &models.Message{
-		Role:    role,
-		Content: content,
+		Role:     role,
+		Content:  content,
+		Metadata: metadataJson,
 	}, nil
 }
 

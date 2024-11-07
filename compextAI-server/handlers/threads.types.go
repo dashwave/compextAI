@@ -3,8 +3,8 @@ package handlers
 import "errors"
 
 type CreateThreadRequest struct {
-	Title    string            `json:"title"`
-	Metadata map[string]string `json:"metadata"`
+	Title    string                 `json:"title"`
+	Metadata map[string]interface{} `json:"metadata"`
 }
 
 func (r *CreateThreadRequest) Validate() error {

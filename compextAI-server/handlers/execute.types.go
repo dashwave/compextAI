@@ -3,8 +3,9 @@ package handlers
 import "fmt"
 
 type ExecuteThreadRequest struct {
-	ThreadExecutionParamID  string `json:"thread_execution_param_id"`
-	AppendAssistantResponse bool   `json:"append_assistant_response"`
+	ThreadExecutionParamID      string `json:"thread_execution_param_id"`
+	ThreadExecutionSystemPrompt string `json:"thread_execution_system_prompt"`
+	AppendAssistantResponse     bool   `json:"append_assistant_response"`
 }
 
 func (r *ExecuteThreadRequest) Validate() error {

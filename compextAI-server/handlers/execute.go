@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/burnerlee/compextAI/controllers"
@@ -42,9 +43,10 @@ func (s *Server) ExecuteThread(w http.ResponseWriter, r *http.Request) {
 	}
 
 	threadExecution, err := controllers.ExecuteThread(s.DB, &controllers.ExecuteThreadRequest{
-		ThreadID:                threadID,
-		ThreadExecutionParamID:  request.ThreadExecutionParamID,
-		AppendAssistantResponse: request.AppendAssistantResponse,
+		ThreadID:                    threadID,
+		ThreadExecutionParamID:      request.ThreadExecutionParamID,
+		AppendAssistantResponse:     request.AppendAssistantResponse,
+		ThreadExecutionSystemPrompt: request.ThreadExecutionSystemPrompt,
 	})
 	if err != nil {
 		responses.Error(w, http.StatusInternalServerError, err.Error())
@@ -118,12 +120,19 @@ func (s *Server) GetThreadExecutionResponse(w http.ResponseWriter, r *http.Reque
 	}
 
 	if threadExecution.Status != models.ThreadExecutionStatus_COMPLETED {
-		responses.Error(w, http.StatusBadRequest, "Thread execution is not completed")
+		responses.Error(w, http.StatusBadRequest, fmt.Sprintf("Thread execution is: %s", threadExecution.Status))
+		return
+	}
+
+	var responseContent interface{}
+	if err := json.Unmarshal(threadExecution.Output, &responseContent); err != nil {
+		responses.Error(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
 	responses.JSON(w, http.StatusOK, map[string]interface{}{
-		"content": threadExecution.ResponseContent,
-		"role":    threadExecution.ResponseRole,
+		"response": responseContent,
+		"content":  threadExecution.Content,
+		"role":     threadExecution.Role,
 	})
 }

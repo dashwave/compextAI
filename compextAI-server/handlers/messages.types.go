@@ -3,9 +3,9 @@ package handlers
 import "errors"
 
 type CreateMessageRequest struct {
-	Content  string            `json:"content"`
-	Role     string            `json:"role"`
-	Metadata map[string]string `json:"metadata"`
+	Content  string                 `json:"content"`
+	Role     string                 `json:"role"`
+	Metadata map[string]interface{} `json:"metadata"`
 }
 
 func (r *CreateMessageRequest) Validate() error {

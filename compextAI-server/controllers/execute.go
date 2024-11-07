@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 
@@ -15,6 +16,11 @@ func ExecuteThread(db *gorm.DB, req *ExecuteThreadRequest) (interface{}, error) 
 	if err != nil {
 		logger.GetLogger().Errorf("Error getting thread execution params: %s: %v", req.ThreadExecutionParamID, err)
 		return nil, err
+	}
+
+	if req.ThreadExecutionSystemPrompt != "" {
+		logger.GetLogger().Infof("Setting thread execution system prompt: %s", req.ThreadExecutionSystemPrompt)
+		threadExecutionParams.SystemPrompt = req.ThreadExecutionSystemPrompt
 	}
 
 	chatProvider, err := chat.GetChatCompletionsProvider(threadExecutionParams.Model)
@@ -34,6 +40,7 @@ func ExecuteThread(db *gorm.DB, req *ExecuteThreadRequest) (interface{}, error) 
 		ThreadID:               req.ThreadID,
 		ThreadExecutionParamID: req.ThreadExecutionParamID,
 		Status:                 models.ThreadExecutionStatus_IN_PROGRESS,
+		Metadata:               json.RawMessage(fmt.Sprintf(`{"system_prompt": "%s"}`, req.ThreadExecutionSystemPrompt)),
 	}
 
 	threadExecution, err = models.CreateThreadExecution(db, threadExecution)
@@ -42,7 +49,7 @@ func ExecuteThread(db *gorm.DB, req *ExecuteThreadRequest) (interface{}, error) 
 		return nil, err
 	}
 
-	go func(thread models.Thread, threadExecution models.ThreadExecution, threadExecutionParams models.ThreadExecutionParams, appendAssistantResponse bool) {
+	go func(p chat.ChatCompletionsProvider, thread models.Thread, threadExecution models.ThreadExecution, threadExecutionParams models.ThreadExecutionParams, appendAssistantResponse bool) {
 		// get the user
 		user, err := models.GetUserByID(db, thread.UserID)
 		if err != nil {
@@ -65,29 +72,39 @@ func ExecuteThread(db *gorm.DB, req *ExecuteThreadRequest) (interface{}, error) 
 		}
 
 		logger.GetLogger().Infof("Thread execution completed: %s", req.ThreadID)
-		handleThreadExecutionSuccess(db, &threadExecution, threadExecutionResponse, appendAssistantResponse)
-	}(*thread, *threadExecution, *threadExecutionParams, req.AppendAssistantResponse)
+		handleThreadExecutionSuccess(db, p, &threadExecution, threadExecutionResponse, appendAssistantResponse)
+	}(chatProvider, *thread, *threadExecution, *threadExecutionParams, req.AppendAssistantResponse)
 
 	return threadExecution, nil
 }
 
 func handleThreadExecutionError(db *gorm.DB, threadExecution *models.ThreadExecution, err error) {
 	threadExecution.Status = models.ThreadExecutionStatus_FAILED
-	threadExecution.Output = err.Error()
+	threadExecution.Output = json.RawMessage(fmt.Sprintf(`{"error": "%s"}`, err.Error()))
 	models.UpdateThreadExecution(db, threadExecution)
 }
 
-func handleThreadExecutionSuccess(db *gorm.DB, threadExecution *models.ThreadExecution, threadExecutionResponse interface{}, appendAssistantResponse bool) {
-	responseMessage := threadExecutionResponse.(map[string]interface{})
-	responseContent := responseMessage["content"].(string)
-	responseRole := responseMessage["role"].(string)
+func handleThreadExecutionSuccess(db *gorm.DB, p chat.ChatCompletionsProvider, threadExecution *models.ThreadExecution, threadExecutionResponse interface{}, appendAssistantResponse bool) {
+	responseJson, err := json.Marshal(threadExecutionResponse)
+	if err != nil {
+		logger.GetLogger().Errorf("Error marshalling thread execution response: %v", err)
+		return
+	}
+
+	message, err := p.ConvertExecutionResponseToMessage(threadExecutionResponse)
+	if err != nil {
+		logger.GetLogger().Errorf("Error converting thread execution response to message: %v", err)
+		return
+	}
 
 	if appendAssistantResponse {
 		logger.GetLogger().Infof("Appending assistant response")
+
 		if err := models.CreateMessage(db, &models.Message{
 			ThreadID: threadExecution.ThreadID,
-			Role:     responseRole,
-			Content:  responseContent,
+			Role:     message.Role,
+			Content:  message.Content,
+			Metadata: message.Metadata,
 		}); err != nil {
 			logger.GetLogger().Errorf("Error creating assistant message: %v", err)
 		} else {
@@ -96,8 +113,9 @@ func handleThreadExecutionSuccess(db *gorm.DB, threadExecution *models.ThreadExe
 	}
 
 	threadExecution.Status = models.ThreadExecutionStatus_COMPLETED
-	threadExecution.Output = fmt.Sprintf("%v", threadExecutionResponse)
-	threadExecution.ResponseContent = responseContent
-	threadExecution.ResponseRole = responseRole
+	threadExecution.Output = responseJson
+	threadExecution.Content = message.Content
+	threadExecution.Role = message.Role
+	threadExecution.ExecutionResponseMetadata = message.Metadata
 	models.UpdateThreadExecution(db, threadExecution)
 }
