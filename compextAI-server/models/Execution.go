@@ -17,18 +17,18 @@ const (
 
 type ThreadExecution struct {
 	Base
-	UserID                         uint                  `json:"user_id"`
-	ThreadID                       string                `json:"thread_id"`
-	Thread                         Thread                `json:"thread" gorm:"foreignKey:ThreadID;references:Identifier"`
-	ThreadExecutionParamTemplateID string                `json:"thread_execution_param_template_id"`
-	ThreadExecutionParams          ThreadExecutionParams `json:"thread_execution_params" gorm:"foreignKey:ThreadExecutionParamID;references:Identifier"`
-	Status                         string                `json:"status"`
-	InputMessages                  json.RawMessage       `json:"input_messages" gorm:"type:jsonb"`
-	Output                         json.RawMessage       `json:"output" gorm:"type:jsonb"`
-	Content                        string                `json:"content"`
-	Role                           string                `json:"role"`
-	ExecutionResponseMetadata      json.RawMessage       `json:"execution_response_metadata" gorm:"type:jsonb"`
-	ExecutionRequestMetadata       json.RawMessage       `json:"execution_request_metadata" gorm:"type:jsonb"`
+	UserID                          uint                          `json:"user_id"`
+	ThreadID                        string                        `json:"thread_id"`
+	Thread                          Thread                        `json:"thread" gorm:"foreignKey:ThreadID;references:Identifier"`
+	ThreadExecutionParamsTemplateID string                        `json:"thread_execution_params_template_id"`
+	ThreadExecutionParamsTemplate   ThreadExecutionParamsTemplate `json:"thread_execution_params_template" gorm:"foreignKey:ThreadExecutionParamsTemplateID;references:Identifier"`
+	Status                          string                        `json:"status"`
+	InputMessages                   json.RawMessage               `json:"input_messages" gorm:"type:jsonb"`
+	Output                          json.RawMessage               `json:"output" gorm:"type:jsonb"`
+	Content                         string                        `json:"content"`
+	Role                            string                        `json:"role"`
+	ExecutionResponseMetadata       json.RawMessage               `json:"execution_response_metadata" gorm:"type:jsonb"`
+	ExecutionRequestMetadata        json.RawMessage               `json:"execution_request_metadata" gorm:"type:jsonb"`
 }
 
 // ThreadExecutionParams are the parameters for executing a thread
