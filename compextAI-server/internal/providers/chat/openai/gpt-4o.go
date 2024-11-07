@@ -63,13 +63,13 @@ func (g *GPT4O) ValidateMessage(message *models.Message) error {
 }
 
 type gpt4oOpenAIMessage struct {
-	Role     string            `json:"role"`
-	Content  string            `json:"content"`
-	Metadata map[string]string `json:"metadata"`
+	Role     string                 `json:"role"`
+	Content  string                 `json:"content"`
+	Metadata map[string]interface{} `json:"metadata"`
 }
 
 func (g *GPT4O) ConvertMessageToProviderFormat(message *models.Message) (interface{}, error) {
-	var metadata map[string]string
+	var metadata map[string]interface{}
 	if message.Metadata != nil {
 		if err := json.Unmarshal(message.Metadata, &metadata); err != nil {
 			return nil, err

@@ -19,9 +19,9 @@ func (r *CreateMessageRequest) Validate() error {
 }
 
 type UpdateMessageRequest struct {
-	Content  string            `json:"content"`
-	Role     string            `json:"role"`
-	Metadata map[string]string `json:"metadata"`
+	Content  string                 `json:"content"`
+	Role     string                 `json:"role"`
+	Metadata map[string]interface{} `json:"metadata"`
 }
 
 func (r *UpdateMessageRequest) Validate() error {

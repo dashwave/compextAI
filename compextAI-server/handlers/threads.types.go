@@ -15,6 +15,6 @@ func (r *CreateThreadRequest) Validate() error {
 }
 
 type UpdateThreadRequest struct {
-	Title    string            `json:"title"`
-	Metadata map[string]string `json:"metadata"`
+	Title    string                 `json:"title"`
+	Metadata map[string]interface{} `json:"metadata"`
 }
