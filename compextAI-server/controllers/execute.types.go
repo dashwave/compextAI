@@ -9,6 +9,7 @@ type ExecuteThreadRequest struct {
 	ThreadExecutionSystemPrompt    string
 	AppendAssistantResponse        bool
 	Messages                       []*models.Message
+	FetchMessagesFromThread        bool
 }
 
 type ExecuteThreadResponse struct {

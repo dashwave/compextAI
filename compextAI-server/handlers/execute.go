@@ -63,6 +63,7 @@ func (s *Server) ExecuteThread(w http.ResponseWriter, r *http.Request) {
 		AppendAssistantResponse:        request.AppendAssistantResponse,
 		ThreadExecutionSystemPrompt:    request.ThreadExecutionSystemPrompt,
 		Messages:                       request.Messages,
+		FetchMessagesFromThread:        true,
 	})
 	if err != nil {
 		responses.Error(w, http.StatusInternalServerError, err.Error())

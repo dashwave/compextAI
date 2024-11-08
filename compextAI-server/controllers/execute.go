@@ -31,7 +31,7 @@ func ExecuteThread(db *gorm.DB, req *ExecuteThreadRequest) (interface{}, error) 
 	}
 
 	var messages []*models.Message
-	if req.ThreadID != constants.THREAD_IDENTIFIER_FOR_NULL_THREAD {
+	if req.ThreadID != constants.THREAD_IDENTIFIER_FOR_NULL_THREAD && req.FetchMessagesFromThread {
 		// get the thread
 		threadMessages, err := models.GetAllMessages(db, req.ThreadID)
 		if err != nil {
@@ -186,5 +186,6 @@ func RerunThreadExecution(db *gorm.DB, req *RerunThreadExecutionRequest) (interf
 		ThreadExecutionSystemPrompt:    req.SystemPrompt,
 		AppendAssistantResponse:        req.AppendAssistantResponse,
 		Messages:                       messages,
+		FetchMessagesFromThread:        false,
 	})
 }
