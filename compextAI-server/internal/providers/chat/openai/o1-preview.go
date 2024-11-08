@@ -57,6 +57,8 @@ func (g *O1Preview) ConvertExecutionResponseToMessage(response interface{}) (*mo
 }
 
 func (g *O1Preview) ExecuteThread(db *gorm.DB, user *models.User, messages []*models.Message, threadExecutionParamsTemplate *models.ThreadExecutionParamsTemplate, threadExecutionIdentifier string) (int, interface{}, error) {
+	messages = handleSystemPromptForO1(messages, threadExecutionParamsTemplate)
+
 	return executeThread(db, user, messages, threadExecutionParamsTemplate, threadExecutionIdentifier, &executeParamConfigs{
 		Model:                      g.model,
 		ExecutorRoute:              g.executorRoute,
@@ -64,4 +66,22 @@ func (g *O1Preview) ExecuteThread(db *gorm.DB, user *models.User, messages []*mo
 		DefaultMaxCompletionTokens: O1_PREVIEW_DEFAULT_MAX_COMPLETION_TOKENS,
 		DefaultTimeout:             O1_PREVIEW_DEFAULT_TIMEOUT,
 	})
+}
+
+func handleSystemPromptForO1(messages []*models.Message, threadExecutionParamsTemplate *models.ThreadExecutionParamsTemplate) []*models.Message {
+	// o1 models don't support system prompts, so we need to handle it here
+	messages = filterNonSystemMessages(messages)
+
+	systemPrompt := getSystemPrompt(messages, threadExecutionParamsTemplate)
+
+	if systemPrompt != "" {
+		messages = append([]*models.Message{{
+			Role:    "user",
+			Content: systemPrompt,
+		}}, messages...)
+	}
+
+	threadExecutionParamsTemplate.SystemPrompt = ""
+
+	return messages
 }

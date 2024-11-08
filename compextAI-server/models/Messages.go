@@ -15,7 +15,7 @@ type Message struct {
 	Role     string          `json:"role" gorm:"not null"`
 	ThreadID string          `json:"thread_id" gorm:"not null"`
 	Thread   Thread          `json:"thread" gorm:"foreignKey:ThreadID;references:Identifier"`
-	Metadata json.RawMessage `json:"metadata" gorm:"type:jsonb default:'{}'"`
+	Metadata json.RawMessage `json:"metadata" gorm:"type:jsonb;default:'{}'"`
 
 	// Implement support for tool calls and function calls later on
 	// ToolCalls []ToolCall        `json:"tool_calls"`

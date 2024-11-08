@@ -112,6 +112,32 @@ type executeParamConfigs struct {
 	DefaultTimeout             int
 }
 
+func getSystemPrompt(messages []*models.Message, threadExecutionParamsTemplate *models.ThreadExecutionParamsTemplate) string {
+	if threadExecutionParamsTemplate.SystemPrompt != "" {
+		return threadExecutionParamsTemplate.SystemPrompt
+	}
+
+	systemPrompt := ""
+
+	// find the last system message and use it as the system prompt
+	for _, message := range messages {
+		if message.Role == "system" {
+			systemPrompt = message.Content
+		}
+	}
+	return systemPrompt
+}
+
+func filterNonSystemMessages(messages []*models.Message) []*models.Message {
+	nonSystemMessages := make([]*models.Message, 0)
+	for _, message := range messages {
+		if message.Role != "system" {
+			nonSystemMessages = append(nonSystemMessages, message)
+		}
+	}
+	return nonSystemMessages
+}
+
 func executeThread(db *gorm.DB, user *models.User, messages []*models.Message, threadExecutionParamsTemplate *models.ThreadExecutionParamsTemplate, threadExecutionIdentifier string, configs *executeParamConfigs) (int, interface{}, error) {
 	systemPrompt := ""
 

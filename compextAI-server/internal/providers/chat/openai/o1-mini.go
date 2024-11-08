@@ -57,6 +57,9 @@ func (g *O1Mini) ConvertExecutionResponseToMessage(response interface{}) (*model
 }
 
 func (g *O1Mini) ExecuteThread(db *gorm.DB, user *models.User, messages []*models.Message, threadExecutionParamsTemplate *models.ThreadExecutionParamsTemplate, threadExecutionIdentifier string) (int, interface{}, error) {
+	// o1 models don't support system prompts, so we need to handle it here
+	messages = handleSystemPromptForO1(messages, threadExecutionParamsTemplate)
+
 	return executeThread(db, user, messages, threadExecutionParamsTemplate, threadExecutionIdentifier, &executeParamConfigs{
 		Model:                      g.model,
 		ExecutorRoute:              g.executorRoute,
