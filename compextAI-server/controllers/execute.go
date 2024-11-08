@@ -64,6 +64,10 @@ func ExecuteThread(db *gorm.DB, req *ExecuteThreadRequest) (interface{}, error) 
 			return
 		}
 
+		if threadExecutionParamsTemplate.ResponseFormat == nil {
+			threadExecutionParamsTemplate.ResponseFormat = json.RawMessage("{}")
+		}
+
 		// execute the thread using the chat provider
 		statusCode, threadExecutionResponse, err := chatProvider.ExecuteThread(db, user, messages, &threadExecutionParamsTemplate, threadExecution.Identifier)
 		if err != nil {
@@ -85,9 +89,20 @@ func ExecuteThread(db *gorm.DB, req *ExecuteThreadRequest) (interface{}, error) 
 	return threadExecution, nil
 }
 
-func handleThreadExecutionError(db *gorm.DB, threadExecution *models.ThreadExecution, err error) {
+func handleThreadExecutionError(db *gorm.DB, threadExecution *models.ThreadExecution, execErr error) {
 	threadExecution.Status = models.ThreadExecutionStatus_FAILED
-	threadExecution.Output = json.RawMessage(fmt.Sprintf(`{"error": "%s"}`, err.Error()))
+
+	errJson, jsonErr := json.Marshal(struct {
+		Error string `json:"error"`
+	}{
+		Error: execErr.Error(),
+	})
+	if jsonErr != nil {
+		logger.GetLogger().Errorf("Error marshalling error: %v", jsonErr)
+		return
+	}
+	threadExecution.Output = errJson
+
 	models.UpdateThreadExecution(db, threadExecution)
 }
 

@@ -23,12 +23,12 @@ type ThreadExecution struct {
 	ThreadExecutionParamsTemplateID string                        `json:"thread_execution_params_template_id"`
 	ThreadExecutionParamsTemplate   ThreadExecutionParamsTemplate `json:"thread_execution_params_template" gorm:"foreignKey:ThreadExecutionParamsTemplateID;references:Identifier"`
 	Status                          string                        `json:"status"`
-	InputMessages                   json.RawMessage               `json:"input_messages" gorm:"type:jsonb"`
-	Output                          json.RawMessage               `json:"output" gorm:"type:jsonb"`
+	InputMessages                   json.RawMessage               `json:"input_messages" gorm:"type:jsonb default:'{}'"`
+	Output                          json.RawMessage               `json:"output" gorm:"type:jsonb default:'{}'"`
 	Content                         string                        `json:"content"`
 	Role                            string                        `json:"role"`
-	ExecutionResponseMetadata       json.RawMessage               `json:"execution_response_metadata" gorm:"type:jsonb"`
-	ExecutionRequestMetadata        json.RawMessage               `json:"execution_request_metadata" gorm:"type:jsonb"`
+	ExecutionResponseMetadata       json.RawMessage               `json:"execution_response_metadata" gorm:"type:jsonb default:'{}'"`
+	ExecutionRequestMetadata        json.RawMessage               `json:"execution_request_metadata" gorm:"type:jsonb default:'{}'"`
 }
 
 // ThreadExecutionParams are the parameters for executing a thread
@@ -52,7 +52,7 @@ type ThreadExecutionParamsTemplate struct {
 	MaxCompletionTokens int             `json:"max_completion_tokens"`
 	TopP                float64         `json:"top_p"`
 	MaxOutputTokens     int             `json:"max_output_tokens"`
-	ResponseFormat      json.RawMessage `json:"response_format" gorm:"type:jsonb"`
+	ResponseFormat      json.RawMessage `json:"response_format" gorm:"type:jsonb default:'{}'"`
 	SystemPrompt        string          `json:"system_prompt"`
 }
 

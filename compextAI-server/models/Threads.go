@@ -15,7 +15,7 @@ type Thread struct {
 	User     User            `json:"user" gorm:"foreignKey:UserID"`
 	UserID   uint            `json:"user_id" gorm:"not null"`
 	Title    string          `json:"title" gorm:"not null"`
-	Metadata json.RawMessage `json:"metadata" gorm:"type:jsonb"`
+	Metadata json.RawMessage `json:"metadata" gorm:"type:jsonb default:'{}'"`
 }
 
 func GetAllThreads(db *gorm.DB, userID uint) ([]Thread, error) {
