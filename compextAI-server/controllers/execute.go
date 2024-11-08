@@ -90,8 +90,6 @@ func ExecuteThread(db *gorm.DB, req *ExecuteThreadRequest) (interface{}, error) 
 }
 
 func handleThreadExecutionError(db *gorm.DB, threadExecution *models.ThreadExecution, execErr error) {
-	threadExecution.Status = models.ThreadExecutionStatus_FAILED
-
 	errJson, jsonErr := json.Marshal(struct {
 		Error string `json:"error"`
 	}{
@@ -101,9 +99,17 @@ func handleThreadExecutionError(db *gorm.DB, threadExecution *models.ThreadExecu
 		logger.GetLogger().Errorf("Error marshalling error: %v", jsonErr)
 		return
 	}
-	threadExecution.Output = errJson
 
-	models.UpdateThreadExecution(db, threadExecution)
+	updatedThreadExecution := models.ThreadExecution{
+		Base: models.Base{
+			ID:         threadExecution.ID,
+			Identifier: threadExecution.Identifier,
+		},
+		Status: models.ThreadExecutionStatus_FAILED,
+		Output: errJson,
+	}
+
+	models.UpdateThreadExecution(db, &updatedThreadExecution)
 }
 
 func handleThreadExecutionSuccess(db *gorm.DB, p chat.ChatCompletionsProvider, threadExecution *models.ThreadExecution, threadExecutionResponse interface{}, appendAssistantResponse bool) {
@@ -134,12 +140,18 @@ func handleThreadExecutionSuccess(db *gorm.DB, p chat.ChatCompletionsProvider, t
 		}
 	}
 
-	threadExecution.Status = models.ThreadExecutionStatus_COMPLETED
-	threadExecution.Output = responseJson
-	threadExecution.Content = message.Content
-	threadExecution.Role = message.Role
-	threadExecution.ExecutionResponseMetadata = message.Metadata
-	models.UpdateThreadExecution(db, threadExecution)
+	updatedThreadExecution := models.ThreadExecution{
+		Base: models.Base{
+			ID:         threadExecution.ID,
+			Identifier: threadExecution.Identifier,
+		},
+		Status:                    models.ThreadExecutionStatus_COMPLETED,
+		Output:                    responseJson,
+		Content:                   message.Content,
+		Role:                      message.Role,
+		ExecutionResponseMetadata: message.Metadata,
+	}
+	models.UpdateThreadExecution(db, &updatedThreadExecution)
 }
 
 func RerunThreadExecution(db *gorm.DB, req *RerunThreadExecutionRequest) (interface{}, error) {

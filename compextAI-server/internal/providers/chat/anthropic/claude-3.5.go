@@ -178,14 +178,9 @@ func (g *Claude35) ExecuteThread(db *gorm.DB, user *models.User, messages []*mod
 		return -1, nil, err
 	}
 
-	if err := base.UpdateThreadExecutionMetadata(db, threadExecutionIdentifier, executionData, messages); err != nil {
-		logger.GetLogger().Errorf("Error updating thread execution metadata: %v", err)
-		return -1, nil, err
-	}
-
 	executionParams := &base.ExecuteParams{
 		Timeout: time.Duration(executionData.Timeout) * time.Second,
 	}
 
-	return base.Execute(g.executorRoute, executionParams, executionData)
+	return base.Execute(db, g.executorRoute, executionParams, executionData, threadExecutionIdentifier, modelMessages)
 }

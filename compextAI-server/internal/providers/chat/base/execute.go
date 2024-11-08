@@ -8,6 +8,9 @@ import (
 	"net/http"
 	"os"
 	"time"
+
+	"github.com/burnerlee/compextAI/internal/logger"
+	"gorm.io/gorm"
 )
 
 type executorClient struct {
@@ -40,8 +43,15 @@ func (c *executorClient) getRequest(execRoute, method string, data interface{}) 
 	return request, nil
 }
 
-func Execute(execRoute string, executeParams *ExecuteParams, threadExecutionData interface{}) (int, interface{}, error) {
+func Execute(db *gorm.DB, execRoute string, executeParams *ExecuteParams, threadExecutionData interface{}, threadExecutionIdentifier string, messages interface{}) (int, interface{}, error) {
 	executorClient := getExecutorClient()
+
+	// update thread execution metadata
+	if err := UpdateThreadExecutionMetadata(db, threadExecutionIdentifier, threadExecutionData, messages); err != nil {
+		logger.GetLogger().Errorf("Error updating thread execution metadata: %v", err)
+		return -1, nil, err
+	}
+
 	request, err := executorClient.getRequest(execRoute, "POST", threadExecutionData)
 	if err != nil {
 		return -1, nil, fmt.Errorf("error getting request: %w", err)

@@ -8,7 +8,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func UpdateThreadExecutionMetadata(db *gorm.DB, threadExecutionIdentifier string, metadata interface{}, messages []*models.Message) error {
+func UpdateThreadExecutionMetadata(db *gorm.DB, threadExecutionIdentifier string, metadata interface{}, messages interface{}) error {
 	threadExecution, err := models.GetThreadExecutionByID(db, threadExecutionIdentifier)
 	if err != nil {
 		return fmt.Errorf("error getting thread execution: %v", err)
