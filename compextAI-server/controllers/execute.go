@@ -116,12 +116,14 @@ func handleThreadExecutionSuccess(db *gorm.DB, p chat.ChatCompletionsProvider, t
 	responseJson, err := json.Marshal(threadExecutionResponse)
 	if err != nil {
 		logger.GetLogger().Errorf("Error marshalling thread execution response: %v", err)
+		handleThreadExecutionError(db, threadExecution, fmt.Errorf("error marshalling thread execution response: %v", err))
 		return
 	}
 
 	message, err := p.ConvertExecutionResponseToMessage(threadExecutionResponse)
 	if err != nil {
 		logger.GetLogger().Errorf("Error converting thread execution response to message: %v", err)
+		handleThreadExecutionError(db, threadExecution, fmt.Errorf("error converting thread execution response to message: %v", err))
 		return
 	}
 
@@ -135,6 +137,8 @@ func handleThreadExecutionSuccess(db *gorm.DB, p chat.ChatCompletionsProvider, t
 			Metadata: message.Metadata,
 		}); err != nil {
 			logger.GetLogger().Errorf("Error creating assistant message: %v", err)
+			handleThreadExecutionError(db, threadExecution, fmt.Errorf("error creating assistant message: %v", err))
+			return
 		} else {
 			logger.GetLogger().Infof("assistant message created")
 		}
