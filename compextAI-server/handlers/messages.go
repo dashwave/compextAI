@@ -68,29 +68,35 @@ func (s *Server) CreateMessage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var message CreateMessageRequest
-	if err := json.NewDecoder(r.Body).Decode(&message); err != nil {
+	var messages CreateMessageRequest
+	if err := json.NewDecoder(r.Body).Decode(&messages); err != nil {
 		responses.Error(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	if err := message.Validate(); err != nil {
+	if err := messages.Validate(); err != nil {
 		responses.Error(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	createdMessage, err := controllers.CreateMessage(s.DB, &controllers.CreateMessageRequest{
+	messagesController := []*controllers.CreateMessage{}
+	for _, message := range messages.Messages {
+		messagesController = append(messagesController, &controllers.CreateMessage{
+			Content:  message.Content,
+			Role:     message.Role,
+			Metadata: message.Metadata,
+		})
+	}
+	createdMessages, err := controllers.CreateMessages(s.DB, &controllers.CreateMessageRequest{
 		ThreadID: threadID,
-		Content:  message.Content,
-		Role:     message.Role,
-		Metadata: message.Metadata,
+		Messages: messagesController,
 	})
 	if err != nil {
 		responses.Error(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	responses.JSON(w, http.StatusOK, createdMessage)
+	responses.JSON(w, http.StatusOK, createdMessages)
 }
 
 func (s *Server) GetMessage(w http.ResponseWriter, r *http.Request) {
