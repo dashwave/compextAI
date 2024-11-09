@@ -103,6 +103,7 @@ type squashedThreadExecutionParams struct {
 	Identifier          string      `json:"identifier"`
 	Name                string      `json:"name"`
 	Environment         string      `json:"environment"`
+	TemplateID          string      `json:"template_id"`
 	Model               string      `json:"model"`
 	Temperature         float64     `json:"temperature"`
 	Timeout             int         `json:"timeout"`
@@ -115,3 +116,17 @@ type squashedThreadExecutionParams struct {
 }
 
 type ExecuteParamsResponse []*squashedThreadExecutionParams
+
+type UpdateThreadExecutionParamsRequest struct {
+	ProjectName string `json:"project_name"`
+	Name        string `json:"name"`
+	Environment string `json:"environment"`
+	TemplateID  string `json:"template_id"`
+}
+
+func (r *UpdateThreadExecutionParamsRequest) Validate() error {
+	if r.TemplateID == "" {
+		return errors.New("template_id is required")
+	}
+	return nil
+}

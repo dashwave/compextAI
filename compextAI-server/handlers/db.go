@@ -43,7 +43,7 @@ func InitDB() (*gorm.DB, error) {
 }
 
 func MigrateDB(db *gorm.DB) error {
-	if err := db.AutoMigrate(&models.Message{}, &models.Thread{}, &models.User{}, &models.ThreadExecution{}, &models.ThreadExecutionParams{}); err != nil {
+	if err := db.AutoMigrate(&models.Project{}, &models.Message{}, &models.Thread{}, &models.User{}, &models.ThreadExecution{}, &models.ThreadExecutionParams{}); err != nil {
 		return fmt.Errorf("failed to migrate database: %w", err)
 	}
 

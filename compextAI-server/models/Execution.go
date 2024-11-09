@@ -217,3 +217,7 @@ func GetThreadExecutionParamsByTemplateID(db *gorm.DB, templateID string) ([]Thr
 	}
 	return threadExecutionParams, nil
 }
+
+func UpdateThreadExecutionParamsTemplateID(db *gorm.DB, threadExecutionParamsID, templateID string) error {
+	return db.Model(&ThreadExecutionParams{}).Where("identifier = ?", threadExecutionParamsID).Update("template_id", templateID).Error
+}

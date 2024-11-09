@@ -44,6 +44,7 @@ func (s *Server) ListThreadExecutionParams(w http.ResponseWriter, r *http.Reques
 			Identifier:          executionParam.Identifier,
 			Name:                executionParam.Name,
 			Environment:         executionParam.Environment,
+			TemplateID:          executionParam.TemplateID,
 			Model:               executionParam.Template.Model,
 			Temperature:         executionParam.Template.Temperature,
 			Timeout:             executionParam.Template.Timeout,
@@ -148,6 +149,7 @@ func (s *Server) GetThreadExecutionParamsByNameAndEnv(w http.ResponseWriter, r *
 		Identifier:          executionParams.Identifier,
 		Name:                executionParams.Name,
 		Environment:         executionParams.Environment,
+		TemplateID:          executionParams.TemplateID,
 		Model:               executionParams.Template.Model,
 		Temperature:         executionParams.Template.Temperature,
 		Timeout:             executionParams.Template.Timeout,
@@ -160,6 +162,43 @@ func (s *Server) GetThreadExecutionParamsByNameAndEnv(w http.ResponseWriter, r *
 	}
 
 	responses.JSON(w, http.StatusOK, response)
+}
+
+func (s *Server) UpdateThreadExecutionParams(w http.ResponseWriter, r *http.Request) {
+	userID, err := utils.GetUserIDFromRequest(r)
+	if err != nil {
+		responses.Error(w, http.StatusUnauthorized, err.Error())
+		return
+	}
+
+	var request UpdateThreadExecutionParamsRequest
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		responses.Error(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	if err := request.Validate(); err != nil {
+		responses.Error(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	projectID, err := utils.GetProjectIDFromName(s.DB, request.ProjectName, uint(userID))
+	if err != nil {
+		responses.Error(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	existingExecutionParams, err := models.GetThreadExecutionParamsByUserIDAndNameAndEnvironment(s.DB, uint(userID), request.Name, request.Environment, projectID)
+	if err != nil {
+		responses.Error(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	if err := models.UpdateThreadExecutionParamsTemplateID(s.DB, existingExecutionParams.Identifier, request.TemplateID); err != nil {
+		responses.Error(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	responses.JSON(w, http.StatusOK, "Execution params updated")
 }
 
 func (s *Server) DeleteThreadExecutionParams(w http.ResponseWriter, r *http.Request) {
@@ -212,7 +251,13 @@ func (s *Server) ListThreadExecutionParamsTemplates(w http.ResponseWriter, r *ht
 		return
 	}
 
-	threadExecutionParamsTemplates, err := models.GetAllThreadExecutionParamsTemplates(s.DB, uint(userID), projectName)
+	projectID, err := utils.GetProjectIDFromName(s.DB, projectName, uint(userID))
+	if err != nil {
+		responses.Error(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	threadExecutionParamsTemplates, err := models.GetAllThreadExecutionParamsTemplates(s.DB, uint(userID), projectID)
 	if err != nil {
 		responses.Error(w, http.StatusInternalServerError, err.Error())
 		return
@@ -244,8 +289,15 @@ func (s *Server) CreateThreadExecutionParamsTemplate(w http.ResponseWriter, r *h
 		return
 	}
 
+	projectID, err := utils.GetProjectIDFromName(s.DB, request.ProjectName, uint(userID))
+	if err != nil {
+		responses.Error(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
 	threadExecutionParamsTemplate := models.ThreadExecutionParamsTemplate{
 		Name:                request.Name,
+		ProjectID:           projectID,
 		UserID:              uint(userID),
 		Model:               request.Model,
 		Temperature:         request.Temperature,

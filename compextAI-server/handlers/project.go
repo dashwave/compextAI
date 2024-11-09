@@ -82,7 +82,7 @@ func (s *Server) GetProject(w http.ResponseWriter, r *http.Request) {
 	responses.JSON(w, http.StatusOK, project)
 }
 
-func (s *Server) GetAllProjects(w http.ResponseWriter, r *http.Request) {
+func (s *Server) ListProjects(w http.ResponseWriter, r *http.Request) {
 	userID, err := utils.GetUserIDFromRequest(r)
 	if err != nil {
 		responses.Error(w, http.StatusUnauthorized, err.Error())
