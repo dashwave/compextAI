@@ -16,6 +16,8 @@ func (s *Server) InitRoutes() {
 	threadRouter.HandleFunc("/{id}/execute", middlewares.AuthMiddleware(s.ExecuteThread, s.DB)).Methods("POST")
 
 	threadExecRouter := v1Router.PathPrefix("/threadexec").Subrouter()
+	threadExecRouter.HandleFunc("/all/{projectname}", middlewares.AuthMiddleware(s.ListThreadExecutions, s.DB)).Methods("GET")
+	threadExecRouter.HandleFunc("/{id}", middlewares.AuthMiddleware(s.GetThreadExecution, s.DB)).Methods("GET")
 	threadExecRouter.HandleFunc("/{id}/status", middlewares.AuthMiddleware(s.GetThreadExecutionStatus, s.DB)).Methods("GET")
 	threadExecRouter.HandleFunc("/{id}/response", middlewares.AuthMiddleware(s.GetThreadExecutionResponse, s.DB)).Methods("GET")
 	threadExecRouter.HandleFunc("/{id}/rerun", middlewares.AuthMiddleware(s.RerunThreadExecution, s.DB)).Methods("POST")

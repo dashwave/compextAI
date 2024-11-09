@@ -221,3 +221,11 @@ func GetThreadExecutionParamsByTemplateID(db *gorm.DB, templateID string) ([]Thr
 func UpdateThreadExecutionParamsTemplateID(db *gorm.DB, threadExecutionParamsID, templateID string) error {
 	return db.Model(&ThreadExecutionParams{}).Where("identifier = ?", threadExecutionParamsID).Update("template_id", templateID).Error
 }
+
+func GetAllThreadExecutionsByProjectID(db *gorm.DB, projectID string) ([]ThreadExecution, error) {
+	var threadExecutions []ThreadExecution
+	if err := db.Where("project_id = ?", projectID).Find(&threadExecutions).Error; err != nil {
+		return nil, err
+	}
+	return threadExecutions, nil
+}

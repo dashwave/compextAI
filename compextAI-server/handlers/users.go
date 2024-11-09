@@ -23,6 +23,7 @@ func (s *Server) CreateUser(w http.ResponseWriter, r *http.Request) {
 	user, err := controllers.CreateUser(s.DB, &controllers.CreateUserRequest{
 		Username: request.Username,
 		Password: request.Password,
+		Email:    request.Email,
 	})
 
 	if err != nil {

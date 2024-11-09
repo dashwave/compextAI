@@ -13,6 +13,67 @@ import (
 	"github.com/gorilla/mux"
 )
 
+func (s *Server) GetThreadExecution(w http.ResponseWriter, r *http.Request) {
+	executionID := mux.Vars(r)["id"]
+
+	if executionID == "" {
+		responses.Error(w, http.StatusBadRequest, "id parameter is required")
+		return
+	}
+
+	userID, err := utils.GetUserIDFromRequest(r)
+	if err != nil {
+		responses.Error(w, http.StatusUnauthorized, err.Error())
+		return
+	}
+
+	hasAccess, err := utils.CheckThreadExecutionAccess(s.DB, executionID, uint(userID))
+	if err != nil {
+		responses.Error(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	if !hasAccess {
+		responses.Error(w, http.StatusForbidden, "You are not authorized to access this thread execution")
+		return
+	}
+
+	threadExecution, err := models.GetThreadExecutionByID(s.DB, executionID)
+	if err != nil {
+		responses.Error(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	responses.JSON(w, http.StatusOK, threadExecution)
+}
+
+func (s *Server) ListThreadExecutions(w http.ResponseWriter, r *http.Request) {
+	projectName := mux.Vars(r)["projectname"]
+	if projectName == "" {
+		responses.Error(w, http.StatusBadRequest, "projectname parameter is required")
+		return
+	}
+
+	userID, err := utils.GetUserIDFromRequest(r)
+	if err != nil {
+		responses.Error(w, http.StatusUnauthorized, err.Error())
+		return
+	}
+
+	projectID, err := utils.GetProjectIDFromName(s.DB, projectName, uint(userID))
+	if err != nil {
+		responses.Error(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	threadExecutions, err := models.GetAllThreadExecutionsByProjectID(s.DB, projectID)
+	if err != nil {
+		responses.Error(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	responses.JSON(w, http.StatusOK, threadExecutions)
+}
+
 func (s *Server) ExecuteThread(w http.ResponseWriter, r *http.Request) {
 	threadID := mux.Vars(r)["id"]
 

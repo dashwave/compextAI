@@ -16,6 +16,7 @@ func CreateUser(db *gorm.DB, request *CreateUserRequest) (*models.User, error) {
 		},
 		Username: request.Username,
 		Password: request.Password,
+		Email:    request.Email,
 	}
 
 	apiToken, err := utils.GenerateRandomString(32)

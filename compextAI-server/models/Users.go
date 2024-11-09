@@ -5,6 +5,7 @@ import "gorm.io/gorm"
 type User struct {
 	Base
 	Username     string `json:"username" gorm:"unique"`
+	Email        string `json:"email" gorm:"unique"`
 	Password     string `json:"password" gorm:"not null"`
 	APIToken     string `json:"api_token" gorm:"unique"`
 	OpenAIKey    string `json:"openai_key"`
