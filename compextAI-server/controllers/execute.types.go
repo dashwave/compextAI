@@ -10,6 +10,7 @@ type ExecuteThreadRequest struct {
 	AppendAssistantResponse        bool
 	Messages                       []*models.Message
 	FetchMessagesFromThread        bool
+	ProjectID                      string
 }
 
 type ExecuteThreadResponse struct {

@@ -20,9 +20,10 @@ func CreateThread(db *gorm.DB, request *CreateThreadRequest) (*models.Thread, er
 	}
 
 	thread := models.Thread{
-		UserID:   request.UserID,
-		Title:    request.Title,
-		Metadata: metadataJsonBlob,
+		UserID:    request.UserID,
+		ProjectID: request.ProjectID,
+		Title:     request.Title,
+		Metadata:  metadataJsonBlob,
 	}
 
 	if err := models.CreateThread(tx, &thread); err != nil {

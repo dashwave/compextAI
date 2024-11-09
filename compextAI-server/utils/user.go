@@ -58,3 +58,12 @@ func CheckThreadExecutionParamsTemplateAccess(db *gorm.DB, templateID string, us
 
 	return threadExecutionParamsTemplate.UserID == userID, nil
 }
+
+func CheckProjectAccess(db *gorm.DB, projectID string, userID uint) (bool, error) {
+	project, err := models.GetProject(db, projectID)
+	if err != nil {
+		return false, err
+	}
+
+	return project.UserID == userID, nil
+}

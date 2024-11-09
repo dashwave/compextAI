@@ -19,7 +19,19 @@ func (s *Server) ListThreadExecutionParams(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	executionParams, err := models.GetAllThreadExecutionParams(s.DB, uint(userID))
+	projectName := mux.Vars(r)["projectname"]
+	if projectName == "" {
+		responses.Error(w, http.StatusBadRequest, "Project name is required")
+		return
+	}
+
+	projectID, err := utils.GetProjectIDFromName(s.DB, projectName, uint(userID))
+	if err != nil {
+		responses.Error(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	executionParams, err := models.GetAllThreadExecutionParams(s.DB, uint(userID), projectID)
 	if err != nil {
 		responses.Error(w, http.StatusInternalServerError, err.Error())
 		return
@@ -28,6 +40,7 @@ func (s *Server) ListThreadExecutionParams(w http.ResponseWriter, r *http.Reques
 	response := make(ExecuteParamsResponse, 0)
 	for _, executionParam := range executionParams {
 		response = append(response, &squashedThreadExecutionParams{
+			ProjectID:           executionParam.ProjectID,
 			Identifier:          executionParam.Identifier,
 			Name:                executionParam.Name,
 			Environment:         executionParam.Environment,
@@ -63,8 +76,14 @@ func (s *Server) CreateThreadExecutionParams(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
+	projectID, err := utils.GetProjectIDFromName(s.DB, request.ProjectName, uint(userID))
+	if err != nil {
+		responses.Error(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
 	// checking for existing execution params with the same name
-	_, err = models.GetThreadExecutionParamsByUserIDAndNameAndEnvironment(s.DB, uint(userID), request.Name, request.Environment)
+	_, err = models.GetThreadExecutionParamsByUserIDAndNameAndEnvironment(s.DB, uint(userID), request.Name, request.Environment, projectID)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			// no existing execution params with the same name
@@ -79,6 +98,7 @@ func (s *Server) CreateThreadExecutionParams(w http.ResponseWriter, r *http.Requ
 
 	executionParams := models.ThreadExecutionParams{
 		UserID:      uint(userID),
+		ProjectID:   projectID,
 		Name:        request.Name,
 		Environment: request.Environment,
 		TemplateID:  request.TemplateID,
@@ -110,9 +130,15 @@ func (s *Server) GetThreadExecutionParamsByNameAndEnv(w http.ResponseWriter, r *
 		return
 	}
 
+	projectID, err := utils.GetProjectIDFromName(s.DB, request.ProjectName, uint(userID))
+	if err != nil {
+		responses.Error(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
 	// no need to check access, because the user can only get his own execution params
 
-	executionParams, err := models.GetThreadExecutionParamsByUserIDAndNameAndEnvironment(s.DB, uint(userID), request.Name, request.Environment)
+	executionParams, err := models.GetThreadExecutionParamsByUserIDAndNameAndEnvironment(s.DB, uint(userID), request.Name, request.Environment, projectID)
 	if err != nil {
 		responses.Error(w, http.StatusInternalServerError, err.Error())
 		return
@@ -153,7 +179,13 @@ func (s *Server) DeleteThreadExecutionParams(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	existingExecutionParams, err := models.GetThreadExecutionParamsByUserIDAndNameAndEnvironment(s.DB, uint(userID), request.Name, request.Environment)
+	projectID, err := utils.GetProjectIDFromName(s.DB, request.ProjectName, uint(userID))
+	if err != nil {
+		responses.Error(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	existingExecutionParams, err := models.GetThreadExecutionParamsByUserIDAndNameAndEnvironment(s.DB, uint(userID), request.Name, request.Environment, projectID)
 	if err != nil {
 		responses.Error(w, http.StatusInternalServerError, err.Error())
 		return
@@ -174,7 +206,13 @@ func (s *Server) ListThreadExecutionParamsTemplates(w http.ResponseWriter, r *ht
 		return
 	}
 
-	threadExecutionParamsTemplates, err := models.GetAllThreadExecutionParamsTemplates(s.DB, uint(userID))
+	projectName := mux.Vars(r)["projectname"]
+	if projectName == "" {
+		responses.Error(w, http.StatusBadRequest, "Project name is required")
+		return
+	}
+
+	threadExecutionParamsTemplates, err := models.GetAllThreadExecutionParamsTemplates(s.DB, uint(userID), projectName)
 	if err != nil {
 		responses.Error(w, http.StatusInternalServerError, err.Error())
 		return

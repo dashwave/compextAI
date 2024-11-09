@@ -43,11 +43,24 @@ func ExecuteThread(db *gorm.DB, req *ExecuteThreadRequest) (interface{}, error) 
 		messages = req.Messages
 	}
 
+	// validating that the project id matches the thread project id
+	if req.ThreadID != constants.THREAD_IDENTIFIER_FOR_NULL_THREAD {
+		thread, err := models.GetThread(db, req.ThreadID)
+		if err != nil {
+			logger.GetLogger().Errorf("Error getting thread: %s: %v", req.ThreadID, err)
+			return nil, err
+		}
+		if thread.ProjectID != req.ProjectID {
+			return nil, fmt.Errorf("thread %s does not belong to project %s", req.ThreadID, req.ProjectID)
+		}
+	}
+
 	threadExecution := &models.ThreadExecution{
 		UserID:                          req.UserID,
 		ThreadID:                        req.ThreadID,
 		ThreadExecutionParamsTemplateID: req.ThreadExecutionParamTemplateID,
 		Status:                          models.ThreadExecutionStatus_IN_PROGRESS,
+		ProjectID:                       req.ProjectID,
 	}
 
 	threadExecution, err = models.CreateThreadExecution(db, threadExecution)
@@ -187,5 +200,6 @@ func RerunThreadExecution(db *gorm.DB, req *RerunThreadExecutionRequest) (interf
 		AppendAssistantResponse:        req.AppendAssistantResponse,
 		Messages:                       messages,
 		FetchMessagesFromThread:        false,
+		ProjectID:                      threadExecution.ProjectID,
 	})
 }

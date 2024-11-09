@@ -18,6 +18,7 @@ const (
 type ThreadExecution struct {
 	Base
 	UserID                          uint                          `json:"user_id"`
+	ProjectID                       string                        `json:"project_id"`
 	ThreadID                        string                        `json:"thread_id"`
 	Thread                          Thread                        `json:"thread" gorm:"foreignKey:ThreadID;references:Identifier"`
 	ThreadExecutionParamsTemplateID string                        `json:"thread_execution_params_template_id"`
@@ -36,6 +37,7 @@ type ThreadExecution struct {
 type ThreadExecutionParams struct {
 	Base
 	UserID      uint                          `json:"user_id"`
+	ProjectID   string                        `json:"project_id"`
 	Name        string                        `json:"name"`
 	Environment string                        `json:"environment"`
 	TemplateID  string                        `json:"template_id"`
@@ -45,6 +47,7 @@ type ThreadExecutionParams struct {
 type ThreadExecutionParamsTemplate struct {
 	Base
 	UserID              uint            `json:"user_id"`
+	ProjectID           string          `json:"project_id"`
 	Name                string          `json:"name"`
 	Model               string          `json:"model"`
 	Temperature         float64         `json:"temperature"`
@@ -110,10 +113,10 @@ func GetThreadExecutionParamsByID(db *gorm.DB, threadExecutionParamsID string) (
 	return &threadExecutionParams, nil
 }
 
-func GetAllThreadExecutionParams(db *gorm.DB, userID uint) ([]ThreadExecutionParams, error) {
+func GetAllThreadExecutionParams(db *gorm.DB, userID uint, projectID string) ([]ThreadExecutionParams, error) {
 	var threadExecutionParams []ThreadExecutionParams
 	// preload the template
-	if err := db.Where("user_id = ?", userID).Preload("Template").Find(&threadExecutionParams).Error; err != nil {
+	if err := db.Where("user_id = ? AND project_id = ?", userID, projectID).Preload("Template").Find(&threadExecutionParams).Error; err != nil {
 		return nil, err
 	}
 	return threadExecutionParams, nil
@@ -133,9 +136,9 @@ func DeleteThreadExecutionParams(db *gorm.DB, threadExecutionParamsID string) er
 	return db.Delete(&ThreadExecutionParams{}, "identifier = ?", threadExecutionParamsID).Error
 }
 
-func GetThreadExecutionParamsByUserIDAndNameAndEnvironment(db *gorm.DB, userID uint, name string, environment string) (*ThreadExecutionParams, error) {
+func GetThreadExecutionParamsByUserIDAndNameAndEnvironment(db *gorm.DB, userID uint, name, environment, projectID string) (*ThreadExecutionParams, error) {
 	var threadExecutionParams ThreadExecutionParams
-	if err := db.Where("user_id = ? AND name = ? AND environment = ?", userID, name, environment).Preload("Template").First(&threadExecutionParams).Error; err != nil {
+	if err := db.Where("user_id = ? AND name = ? AND environment = ? AND project_id = ?", userID, name, environment, projectID).Preload("Template").First(&threadExecutionParams).Error; err != nil {
 		return nil, err
 	}
 	return &threadExecutionParams, nil
@@ -199,9 +202,9 @@ func UpdateThreadExecutionParamsTemplate(db *gorm.DB, threadExecutionParamsTempl
 	return db.Model(&ThreadExecutionParamsTemplate{}).Where("identifier = ?", threadExecutionParamsTemplate.Identifier).Updates(updateData).Error
 }
 
-func GetAllThreadExecutionParamsTemplates(db *gorm.DB, userID uint) ([]ThreadExecutionParamsTemplate, error) {
+func GetAllThreadExecutionParamsTemplates(db *gorm.DB, userID uint, projectID string) ([]ThreadExecutionParamsTemplate, error) {
 	var threadExecutionParamsTemplates []ThreadExecutionParamsTemplate
-	if err := db.Where("user_id = ?", userID).Find(&threadExecutionParamsTemplates).Error; err != nil {
+	if err := db.Where("user_id = ? AND project_id = ?", userID, projectID).Find(&threadExecutionParamsTemplates).Error; err != nil {
 		return nil, err
 	}
 	return threadExecutionParamsTemplates, nil

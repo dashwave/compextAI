@@ -8,7 +8,7 @@ func (s *Server) InitRoutes() {
 
 	threadRouter := v1Router.PathPrefix("/thread").Subrouter()
 
-	threadRouter.HandleFunc("", middlewares.AuthMiddleware(s.ListThreads, s.DB)).Methods("GET")
+	threadRouter.HandleFunc("/{projectname}", middlewares.AuthMiddleware(s.ListThreads, s.DB)).Methods("GET")
 	threadRouter.HandleFunc("", middlewares.AuthMiddleware(s.CreateThread, s.DB)).Methods("POST")
 	threadRouter.HandleFunc("/{id}", middlewares.AuthMiddleware(s.GetThread, s.DB)).Methods("GET")
 	threadRouter.HandleFunc("/{id}", middlewares.AuthMiddleware(s.UpdateThread, s.DB)).Methods("PUT")
@@ -35,13 +35,13 @@ func (s *Server) InitRoutes() {
 	userRouter.HandleFunc("/login", s.Login).Methods("POST")
 
 	threadExecutionParamsRouter := v1Router.PathPrefix("/execparams").Subrouter()
-	threadExecutionParamsRouter.HandleFunc("/fetchall", middlewares.AuthMiddleware(s.ListThreadExecutionParams, s.DB)).Methods("GET")
+	threadExecutionParamsRouter.HandleFunc("/fetchall/{projectname}", middlewares.AuthMiddleware(s.ListThreadExecutionParams, s.DB)).Methods("GET")
 	threadExecutionParamsRouter.HandleFunc("/create", middlewares.AuthMiddleware(s.CreateThreadExecutionParams, s.DB)).Methods("POST")
 	threadExecutionParamsRouter.HandleFunc("/fetch", middlewares.AuthMiddleware(s.GetThreadExecutionParamsByNameAndEnv, s.DB)).Methods("POST")
 	threadExecutionParamsRouter.HandleFunc("/delete", middlewares.AuthMiddleware(s.DeleteThreadExecutionParams, s.DB)).Methods("DELETE")
 
 	threadExecutionParamsTemplateRouter := v1Router.PathPrefix("/execparamstemplate").Subrouter()
-	threadExecutionParamsTemplateRouter.HandleFunc("", middlewares.AuthMiddleware(s.ListThreadExecutionParamsTemplates, s.DB)).Methods("GET")
+	threadExecutionParamsTemplateRouter.HandleFunc("/{projectname}", middlewares.AuthMiddleware(s.ListThreadExecutionParamsTemplates, s.DB)).Methods("GET")
 	threadExecutionParamsTemplateRouter.HandleFunc("", middlewares.AuthMiddleware(s.CreateThreadExecutionParamsTemplate, s.DB)).Methods("POST")
 	threadExecutionParamsTemplateRouter.HandleFunc("/{id}", middlewares.AuthMiddleware(s.GetThreadExecutionParamsTemplateByID, s.DB)).Methods("GET")
 	threadExecutionParamsTemplateRouter.HandleFunc("/{id}", middlewares.AuthMiddleware(s.DeleteThreadExecutionParamsTemplate, s.DB)).Methods("DELETE")

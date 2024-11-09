@@ -18,8 +18,20 @@ func (s *Server) ListThreads(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	projectName := mux.Vars(r)["projectname"]
+	if projectName == "" {
+		responses.Error(w, http.StatusBadRequest, "Project name is required")
+		return
+	}
+
+	projectID, err := utils.GetProjectIDFromName(s.DB, projectName, uint(userID))
+	if err != nil {
+		responses.Error(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
 	// find all the threads from the db
-	threads, err := models.GetAllThreads(s.DB, uint(userID))
+	threads, err := models.GetAllThreads(s.DB, uint(userID), projectID)
 	if err != nil {
 		responses.Error(w, http.StatusInternalServerError, err.Error())
 		return
@@ -46,10 +58,17 @@ func (s *Server) CreateThread(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	projectID, err := utils.GetProjectIDFromName(s.DB, request.ProjectName, uint(userID))
+	if err != nil {
+		responses.Error(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
 	threadCreated, err := controllers.CreateThread(s.DB, &controllers.CreateThreadRequest{
-		UserID:   uint(userID),
-		Title:    request.Title,
-		Metadata: request.Metadata,
+		UserID:    uint(userID),
+		ProjectID: projectID,
+		Title:     request.Title,
+		Metadata:  request.Metadata,
 	})
 	if err != nil {
 		responses.Error(w, http.StatusInternalServerError, err.Error())

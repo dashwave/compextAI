@@ -64,6 +64,7 @@ func (s *Server) ExecuteThread(w http.ResponseWriter, r *http.Request) {
 		ThreadExecutionSystemPrompt:    request.ThreadExecutionSystemPrompt,
 		Messages:                       request.Messages,
 		FetchMessagesFromThread:        true,
+		ProjectID:                      threadExecutionParam.ProjectID,
 	})
 	if err != nil {
 		responses.Error(w, http.StatusInternalServerError, err.Error())

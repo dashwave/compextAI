@@ -6,6 +6,7 @@ type CreateThreadExecutionParamsRequest struct {
 	Name        string `json:"name"`
 	Environment string `json:"environment"`
 	TemplateID  string `json:"template_id"`
+	ProjectName string `json:"project_name"`
 }
 
 func (r *CreateThreadExecutionParamsRequest) Validate() error {
@@ -18,12 +19,16 @@ func (r *CreateThreadExecutionParamsRequest) Validate() error {
 	if r.TemplateID == "" {
 		return errors.New("template_id is required")
 	}
+	if r.ProjectName == "" {
+		return errors.New("project_name is required")
+	}
 	return nil
 }
 
 type GetThreadExecutionParamsByNameRequest struct {
 	Name        string `json:"name"`
 	Environment string `json:"environment"`
+	ProjectName string `json:"project_name"`
 }
 
 func (r *GetThreadExecutionParamsByNameRequest) Validate() error {
@@ -33,12 +38,16 @@ func (r *GetThreadExecutionParamsByNameRequest) Validate() error {
 	if r.Environment == "" {
 		return errors.New("environment is required")
 	}
+	if r.ProjectName == "" {
+		return errors.New("project_name is required")
+	}
 	return nil
 }
 
 type DeleteThreadExecutionParamsRequest struct {
 	Name        string `json:"name"`
 	Environment string `json:"environment"`
+	ProjectName string `json:"project_name"`
 }
 
 func (r *DeleteThreadExecutionParamsRequest) Validate() error {
@@ -48,10 +57,14 @@ func (r *DeleteThreadExecutionParamsRequest) Validate() error {
 	if r.Environment == "" {
 		return errors.New("environment is required")
 	}
+	if r.ProjectName == "" {
+		return errors.New("project_name is required")
+	}
 	return nil
 }
 
 type CreateThreadExecutionParamsTemplateRequest struct {
+	ProjectName         string      `json:"project_name"`
 	Name                string      `json:"name"`
 	Model               string      `json:"model"`
 	Temperature         float64     `json:"temperature"`
@@ -71,6 +84,9 @@ func (r *CreateThreadExecutionParamsTemplateRequest) Validate() error {
 	if r.Model == "" {
 		return errors.New("model is required")
 	}
+	if r.ProjectName == "" {
+		return errors.New("project_name is required")
+	}
 	return nil
 }
 
@@ -83,6 +99,7 @@ func (r *UpdateThreadExecutionParamsTemplateRequest) Validate() error {
 }
 
 type squashedThreadExecutionParams struct {
+	ProjectID           string      `json:"project_id"`
 	Identifier          string      `json:"identifier"`
 	Name                string      `json:"name"`
 	Environment         string      `json:"environment"`

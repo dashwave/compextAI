@@ -12,15 +12,16 @@ import (
 // Thread is a collection of messages
 type Thread struct {
 	Base
-	User     User            `json:"user" gorm:"foreignKey:UserID"`
-	UserID   uint            `json:"user_id" gorm:"not null"`
-	Title    string          `json:"title" gorm:"not null"`
-	Metadata json.RawMessage `json:"metadata" gorm:"type:jsonb;default:'{}'"`
+	User      User            `json:"user" gorm:"foreignKey:UserID"`
+	UserID    uint            `json:"user_id" gorm:"not null"`
+	ProjectID string          `json:"project_id"`
+	Title     string          `json:"title" gorm:"not null"`
+	Metadata  json.RawMessage `json:"metadata" gorm:"type:jsonb;default:'{}'"`
 }
 
-func GetAllThreads(db *gorm.DB, userID uint) ([]Thread, error) {
+func GetAllThreads(db *gorm.DB, userID uint, projectID string) ([]Thread, error) {
 	var threads []Thread
-	if err := db.Where("user_id = ?", userID).Find(&threads).Error; err != nil {
+	if err := db.Where("user_id = ? AND project_id = ?", userID, projectID).Find(&threads).Error; err != nil {
 		return nil, err
 	}
 	return threads, nil
