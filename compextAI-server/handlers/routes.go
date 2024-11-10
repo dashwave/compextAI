@@ -36,6 +36,8 @@ func (s *Server) InitRoutes() {
 	userRouter := v1Router.PathPrefix("/user").Subrouter()
 	userRouter.HandleFunc("/signup", s.CreateUser).Methods("POST")
 	userRouter.HandleFunc("/login", s.Login).Methods("POST")
+	userRouter.HandleFunc("/api_keys", middlewares.AuthMiddleware(s.ListAPIKeys, s.DB)).Methods("GET")
+	userRouter.HandleFunc("/api_keys", middlewares.AuthMiddleware(s.UpdateAPIKeys, s.DB)).Methods("PUT")
 
 	threadExecutionParamsRouter := v1Router.PathPrefix("/execparams").Subrouter()
 	threadExecutionParamsRouter.HandleFunc("/fetchall/{projectname}", middlewares.AuthMiddleware(s.ListThreadExecutionParams, s.DB)).Methods("GET")

@@ -8,8 +8,8 @@ type User struct {
 	Email        string `json:"email" gorm:"unique"`
 	Password     string `json:"password" gorm:"not null"`
 	APIToken     string `json:"api_token" gorm:"unique"`
-	OpenAIKey    string `json:"openai_key"`
-	AnthropicKey string `json:"anthropic_key"`
+	OpenAIKey    string `json:"openai_key" gorm:"column:openai_key"`
+	AnthropicKey string `json:"anthropic_key" gorm:"column:anthropic_key"`
 }
 
 func GetUserIDByAPIToken(db *gorm.DB, token string) (uint, error) {
@@ -38,4 +38,16 @@ func GetUserByID(db *gorm.DB, id uint) (*User, error) {
 		return nil, err
 	}
 	return &user, nil
+}
+
+func UpdateUser(db *gorm.DB, user *User) error {
+	updateData := make(map[string]interface{})
+	if user.AnthropicKey != "" {
+		updateData["anthropic_key"] = user.AnthropicKey
+	}
+	if user.OpenAIKey != "" {
+		updateData["openai_key"] = user.OpenAIKey
+	}
+
+	return db.Model(user).Updates(updateData).Error
 }

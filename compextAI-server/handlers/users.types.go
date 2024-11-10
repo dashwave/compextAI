@@ -43,3 +43,13 @@ func (r *LoginRequest) Validate() error {
 type LoginResponse struct {
 	APIToken string `json:"api_token"`
 }
+
+type ListAPIKeysResponse struct {
+	AnthropicKey string `json:"anthropic_key"`
+	OpenAIKey    string `json:"openai_key"`
+}
+
+type UpdateAPIKeysRequest struct {
+	AnthropicKey string `json:"anthropic_key"`
+	OpenAIKey    string `json:"openai_key"`
+}
