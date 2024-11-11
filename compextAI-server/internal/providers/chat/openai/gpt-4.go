@@ -6,9 +6,9 @@ import (
 )
 
 const (
-	GPT4_MODEL          = "gpt-4"
+	GPT4_MODEL          = "gpt4"
 	GPT4_OWNER          = "openai"
-	GPT4_IDENTIFIER     = "gpt-4"
+	GPT4_IDENTIFIER     = "gpt4"
 	GPT4_EXECUTOR_ROUTE = "/chatcompletion/openai"
 
 	GPT4_DEFAULT_TEMPERATURE           = 0.5
