@@ -99,7 +99,7 @@ func UpdateThreadExecution(db *gorm.DB, threadExecution *ThreadExecution) error 
 
 func GetThreadExecutionByID(db *gorm.DB, executionID string) (*ThreadExecution, error) {
 	var threadExecution ThreadExecution
-	if err := db.Where("identifier = ?", executionID).Preload("Thread").First(&threadExecution).Error; err != nil {
+	if err := db.Where("identifier = ?", executionID).Preload("Thread").Preload("ThreadExecutionParamsTemplate").First(&threadExecution).Error; err != nil {
 		return nil, err
 	}
 	return &threadExecution, nil

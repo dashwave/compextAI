@@ -125,6 +125,15 @@ type UpdateThreadExecutionParamsRequest struct {
 }
 
 func (r *UpdateThreadExecutionParamsRequest) Validate() error {
+	if r.Name == "" {
+		return errors.New("name is required")
+	}
+	if r.Environment == "" {
+		return errors.New("environment is required")
+	}
+	if r.ProjectName == "" {
+		return errors.New("project_name is required")
+	}
 	if r.TemplateID == "" {
 		return errors.New("template_id is required")
 	}
