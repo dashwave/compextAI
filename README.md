@@ -110,19 +110,20 @@ print(thread_execution_result['content'])
 
 One can view this conversation on the compextAI dashboard:
 
-// image 
+![image](https://github.com/user-attachments/assets/b0a7f39f-6420-4769-818d-91ae2ad64861)
 
-// image
+![image](https://github.com/user-attachments/assets/5b149755-85dc-4bbe-94af-f06431d1d979)
+
 
 You can view the details of the execution as well:
 
-// image
+![image](https://github.com/user-attachments/assets/570a4cf5-94e5-478a-8e38-d5119d9bb2fd)
 
 The product manager can view all details of this execution and even re-execute this thread with the same inputs with different configurations (different model, model params etc.)
 
 The `Prompt Configs` can be configured from the dashboard:
 
-// image
+![image](https://github.com/user-attachments/assets/3c813e5d-1f66-46e2-9cfb-ae011b1b3104)
 
 The developer can go on to add more messages to this conversation/edit conversation messages, and then execute the conversation again.
 
