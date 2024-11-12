@@ -224,7 +224,7 @@ func UpdateThreadExecutionParamsTemplateID(db *gorm.DB, threadExecutionParamsID,
 
 func GetAllThreadExecutionsByProjectID(db *gorm.DB, projectID string) ([]ThreadExecution, error) {
 	var threadExecutions []ThreadExecution
-	if err := db.Where("project_id = ?", projectID).Find(&threadExecutions).Error; err != nil {
+	if err := db.Where("project_id = ?", projectID).Order("created_at DESC").Find(&threadExecutions).Error; err != nil {
 		return nil, err
 	}
 	return threadExecutions, nil

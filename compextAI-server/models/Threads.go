@@ -21,7 +21,7 @@ type Thread struct {
 
 func GetAllThreads(db *gorm.DB, userID uint, projectID string) ([]Thread, error) {
 	var threads []Thread
-	if err := db.Where("user_id = ? AND project_id = ?", userID, projectID).Find(&threads).Error; err != nil {
+	if err := db.Where("user_id = ? AND project_id = ?", userID, projectID).Order("created_at DESC").Find(&threads).Error; err != nil {
 		return nil, err
 	}
 	return threads, nil
