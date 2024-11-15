@@ -19,12 +19,35 @@ type Thread struct {
 	Metadata  json.RawMessage `json:"metadata" gorm:"type:jsonb;default:'{}'"`
 }
 
-func GetAllThreads(db *gorm.DB, userID uint, projectID string) ([]Thread, error) {
-	var threads []Thread
-	if err := db.Where("user_id = ? AND project_id = ?", userID, projectID).Order("created_at DESC").Find(&threads).Error; err != nil {
-		return nil, err
+func GetAllThreads(db *gorm.DB, userID uint, projectID string, searchQuery string, searchFiltersMap map[string]string, page, limit int) ([]Thread, int64, error) {
+	offset := (page - 1) * limit
+	var total int64
+
+	query := db.Model(&Thread{}).Where("user_id = ? AND project_id = ?", userID, projectID)
+
+	if searchQuery != "" {
+		query = query.Where("title LIKE ? OR identifier LIKE ?", "%"+searchQuery+"%", "%"+searchQuery+"%")
 	}
-	return threads, nil
+
+	if len(searchFiltersMap) > 0 {
+		for key, value := range searchFiltersMap {
+			// apply the search filters on metadata keys
+			query = query.Where("metadata ->> ? = ?", key, value)
+		}
+	}
+
+	if err := query.Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	query = query.Order("created_at DESC").Offset(offset).Limit(limit)
+
+	var threads []Thread
+	if err := query.Find(&threads).Error; err != nil {
+		return nil, 0, err
+	}
+
+	return threads, total, nil
 }
 
 func CreateThread(db *gorm.DB, thread *Thread) error {

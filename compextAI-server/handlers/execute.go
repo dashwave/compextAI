@@ -73,6 +73,13 @@ func (s *Server) ListThreadExecutions(w http.ResponseWriter, r *http.Request) {
 		limit = 10
 	}
 	searchQuery := r.URL.Query().Get("search")
+	if searchQuery != "" {
+		searchQuery, err = url.QueryUnescape(searchQuery)
+		if err != nil {
+			responses.Error(w, http.StatusBadRequest, err.Error())
+			return
+		}
+	}
 	searchFilters := r.URL.Query().Get("filters")
 	var searchFiltersMap map[string]string
 
