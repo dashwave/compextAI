@@ -69,6 +69,19 @@ func ExecuteThread(db *gorm.DB, req *ExecuteThreadRequest) (interface{}, error) 
 		return nil, err
 	}
 
+	// add a execution message to the thread
+	// this is used to identify the thread execution in the thread messages
+	if req.ThreadID != constants.THREAD_IDENTIFIER_FOR_NULL_THREAD {
+		if err := models.CreateMessage(db, &models.Message{
+			ThreadID: req.ThreadID,
+			Role:     "execution",
+			Content:  threadExecution.Identifier,
+		}); err != nil {
+			logger.GetLogger().Errorf("Error creating execution message: %v", err)
+			return nil, err
+		}
+	}
+
 	go func(p chat.ChatCompletionsProvider, messages []*models.Message, threadExecution models.ThreadExecution, threadExecutionParamsTemplate models.ThreadExecutionParamsTemplate, appendAssistantResponse bool) {
 		// get the user
 		user, err := models.GetUserByID(db, threadExecution.UserID)

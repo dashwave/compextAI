@@ -19,6 +19,13 @@ func (s *Server) ListMessages(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	includeExecutionMessagesFromThread := false
+
+	includeExecution := r.URL.Query().Get("include_execution")
+	if includeExecution == "true" {
+		includeExecutionMessagesFromThread = true
+	}
+
 	userID, err := utils.GetUserIDFromRequest(r)
 	if err != nil {
 		responses.Error(w, http.StatusUnauthorized, err.Error())
@@ -35,7 +42,12 @@ func (s *Server) ListMessages(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	messages, err := models.GetAllMessages(s.DB, threadID)
+	var messages []*models.Message
+	if includeExecutionMessagesFromThread {
+		messages, err = models.GetAllMessagesWithExecution(s.DB, threadID)
+	} else {
+		messages, err = models.GetAllMessages(s.DB, threadID)
+	}
 	if err != nil {
 		responses.Error(w, http.StatusInternalServerError, err.Error())
 		return

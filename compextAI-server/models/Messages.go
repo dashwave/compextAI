@@ -24,6 +24,14 @@ type Message struct {
 
 func GetAllMessages(db *gorm.DB, threadID string) ([]*Message, error) {
 	var messages []*Message
+	if err := db.Where("thread_id = ?", threadID).Where("role != ?", "execution").Order("created_at ASC").Find(&messages).Error; err != nil {
+		return nil, err
+	}
+	return messages, nil
+}
+
+func GetAllMessagesWithExecution(db *gorm.DB, threadID string) ([]*Message, error) {
+	var messages []*Message
 	if err := db.Where("thread_id = ?", threadID).Order("created_at ASC").Find(&messages).Error; err != nil {
 		return nil, err
 	}
