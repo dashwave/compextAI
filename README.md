@@ -134,4 +134,11 @@ The `Prompt Configs` can be configured from the dashboard:
 
 The developer can go on to add more messages to this conversation/edit conversation messages, and then execute the conversation again.
 
+## Other Repositories
+
+1. https://github.com/burnerlee/compextai-console
+2. https://github.com/burnerlee/compextai-python-client
+3. https://github.com/burnerlee/compextai-go-client
+
+## Docs
 You can find the entire docs [here](https://compextai.notion.site/Docs-13b5ef52981080b4bdd9dcad34bbc394)
