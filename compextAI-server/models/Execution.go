@@ -3,6 +3,7 @@ package models
 import (
 	"encoding/json"
 	"fmt"
+	"slices"
 
 	"github.com/burnerlee/compextAI/constants"
 	"github.com/google/uuid"
@@ -223,10 +224,38 @@ func UpdateThreadExecutionParamsTemplateID(db *gorm.DB, threadExecutionParamsID,
 	return db.Model(&ThreadExecutionParams{}).Where("identifier = ?", threadExecutionParamsID).Update("template_id", templateID).Error
 }
 
-func GetAllThreadExecutionsByProjectID(db *gorm.DB, projectID string) ([]ThreadExecution, error) {
-	var threadExecutions []ThreadExecution
-	if err := db.Where("project_id = ?", projectID).Order("created_at DESC").Find(&threadExecutions).Error; err != nil {
-		return nil, err
+func GetAllThreadExecutionsByProjectID(db *gorm.DB, projectID string, searchQuery string, searchParamsMap map[string]string, page, limit int) ([]ThreadExecution, int64, error) {
+
+	offset := (page - 1) * limit
+	var total int64
+
+	query := db.Model(&ThreadExecution{}).Where("project_id = ?", projectID)
+
+	if searchQuery != "" {
+		query = query.Where("identifier LIKE ? OR thread_id LIKE ?", "%"+searchQuery+"%", "%"+searchQuery+"%")
 	}
-	return threadExecutions, nil
+
+	if len(searchParamsMap) > 0 {
+
+		allowedFilters := []string{"status", "thread_id"}
+		for key, value := range searchParamsMap {
+			if slices.Contains(allowedFilters, key) {
+				query = query.Where(fmt.Sprintf("%s = ?", key), value)
+			}
+		}
+	}
+
+	if err := query.Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	var threadExecutions []ThreadExecution
+	if err := query.Order("created_at DESC").
+		Limit(limit).
+		Offset(offset).
+		Find(&threadExecutions).Error; err != nil {
+		return nil, 0, err
+	}
+
+	return threadExecutions, total, nil
 }

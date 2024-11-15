@@ -4,9 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
+	"strconv"
 
 	"github.com/burnerlee/compextAI/constants"
 	"github.com/burnerlee/compextAI/controllers"
+	"github.com/burnerlee/compextAI/internal/logger"
 	"github.com/burnerlee/compextAI/models"
 	"github.com/burnerlee/compextAI/utils"
 	"github.com/burnerlee/compextAI/utils/responses"
@@ -53,6 +56,44 @@ func (s *Server) ListThreadExecutions(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// find the search query and params from the request
+	// the following is the type definition of the params
+	// export interface ListExecutionsParams {
+	// 	page: number;
+	// 	limit: number;
+	// 	search?: string;
+	// 	filters?: Record<string, string>;
+	//   }
+	page, err := strconv.Atoi(r.URL.Query().Get("page"))
+	if err != nil {
+		page = 1
+	}
+	limit, err := strconv.Atoi(r.URL.Query().Get("limit"))
+	if err != nil {
+		limit = 10
+	}
+	searchQuery := r.URL.Query().Get("search")
+	searchFilters := r.URL.Query().Get("filters")
+	var searchFiltersMap map[string]string
+
+	if searchFilters != "" {
+		// parse the searchParams into a map[string]string
+		// first url decode the searchParams
+		searchFiltersDecoded, err := url.QueryUnescape(searchFilters)
+		if err != nil {
+			responses.Error(w, http.StatusBadRequest, err.Error())
+			return
+		}
+		if searchFiltersDecoded != "" {
+			if err := json.Unmarshal([]byte(searchFiltersDecoded), &searchFiltersMap); err != nil {
+				responses.Error(w, http.StatusBadRequest, err.Error())
+				return
+			}
+		}
+	}
+
+	logger.GetLogger().Infof("searchQuery: %s, searchFiltersMap: %v, page: %d, limit: %d", searchQuery, searchFiltersMap, page, limit)
+
 	userID, err := utils.GetUserIDFromRequest(r)
 	if err != nil {
 		responses.Error(w, http.StatusUnauthorized, err.Error())
@@ -65,7 +106,7 @@ func (s *Server) ListThreadExecutions(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	threadExecutions, err := models.GetAllThreadExecutionsByProjectID(s.DB, projectID)
+	threadExecutions, total, err := models.GetAllThreadExecutionsByProjectID(s.DB, projectID, searchQuery, searchFiltersMap, page, limit)
 	if err != nil {
 		responses.Error(w, http.StatusInternalServerError, err.Error())
 		return
@@ -76,7 +117,7 @@ func (s *Server) ListThreadExecutions(w http.ResponseWriter, r *http.Request) {
 		Total      int                      `json:"total"`
 	}{
 		Executions: threadExecutions,
-		Total:      len(threadExecutions),
+		Total:      int(total),
 	})
 }
 
