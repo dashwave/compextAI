@@ -153,13 +153,13 @@ func (g *Claude35) ExecuteThread(db *gorm.DB, user *models.User, messages []*mod
 		systemPrompt = threadExecutionParamsTemplate.SystemPrompt
 	}
 
-	if threadExecutionParamsTemplate.Temperature == 0 {
+	if threadExecutionParamsTemplate.Temperature <= 0 {
 		threadExecutionParamsTemplate.Temperature = DEFAULT_TEMPERATURE
 	}
-	if threadExecutionParamsTemplate.MaxTokens == 0 {
+	if threadExecutionParamsTemplate.MaxTokens <= 0 {
 		threadExecutionParamsTemplate.MaxTokens = DEFAULT_MAX_TOKENS
 	}
-	if threadExecutionParamsTemplate.Timeout == 0 {
+	if threadExecutionParamsTemplate.Timeout <= 0 {
 		threadExecutionParamsTemplate.Timeout = DEFAULT_TIMEOUT
 	}
 

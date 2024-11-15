@@ -19,7 +19,7 @@ const (
 type ThreadExecution struct {
 	Base
 	UserID                          uint                          `json:"user_id"`
-	ProjectID                       string                        `json:"project_id"`
+	ProjectID                       string                        `json:"project_id" gorm:"index"`
 	ThreadID                        string                        `json:"thread_id"`
 	Thread                          Thread                        `json:"thread" gorm:"foreignKey:ThreadID;references:Identifier"`
 	ThreadExecutionParamsTemplateID string                        `json:"thread_execution_params_template_id"`
@@ -38,7 +38,7 @@ type ThreadExecution struct {
 type ThreadExecutionParams struct {
 	Base
 	UserID      uint                          `json:"user_id"`
-	ProjectID   string                        `json:"project_id"`
+	ProjectID   string                        `json:"project_id" gorm:"index"`
 	Name        string                        `json:"name"`
 	Environment string                        `json:"environment"`
 	TemplateID  string                        `json:"template_id"`
@@ -48,7 +48,7 @@ type ThreadExecutionParams struct {
 type ThreadExecutionParamsTemplate struct {
 	Base
 	UserID              uint            `json:"user_id"`
-	ProjectID           string          `json:"project_id"`
+	ProjectID           string          `json:"project_id" gorm:"index"`
 	Name                string          `json:"name"`
 	Model               string          `json:"model"`
 	Temperature         float64         `json:"temperature"`

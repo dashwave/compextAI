@@ -13,7 +13,7 @@ type Message struct {
 	Base
 	Content  string          `json:"content" gorm:"not null"`
 	Role     string          `json:"role" gorm:"not null"`
-	ThreadID string          `json:"thread_id" gorm:"not null"`
+	ThreadID string          `json:"thread_id" gorm:"not null;index"`
 	Thread   Thread          `json:"thread" gorm:"foreignKey:ThreadID;references:Identifier"`
 	Metadata json.RawMessage `json:"metadata" gorm:"type:jsonb;default:'{}'"`
 

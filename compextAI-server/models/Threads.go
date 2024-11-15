@@ -14,7 +14,7 @@ type Thread struct {
 	Base
 	User      User            `json:"user" gorm:"foreignKey:UserID"`
 	UserID    uint            `json:"user_id" gorm:"not null"`
-	ProjectID string          `json:"project_id"`
+	ProjectID string          `json:"project_id" gorm:"index"`
 	Title     string          `json:"title" gorm:"not null"`
 	Metadata  json.RawMessage `json:"metadata" gorm:"type:jsonb;default:'{}'"`
 }

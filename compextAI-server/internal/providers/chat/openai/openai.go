@@ -168,13 +168,13 @@ func executeThread(db *gorm.DB, user *models.User, messages []*models.Message, t
 		}}, modelMessages...)
 	}
 
-	if threadExecutionParamsTemplate.Temperature == 0 {
+	if threadExecutionParamsTemplate.Temperature <= 0 {
 		threadExecutionParamsTemplate.Temperature = configs.DefaultTemperature
 	}
-	if threadExecutionParamsTemplate.MaxCompletionTokens == 0 {
+	if threadExecutionParamsTemplate.MaxCompletionTokens <= 0 {
 		threadExecutionParamsTemplate.MaxCompletionTokens = configs.DefaultMaxCompletionTokens
 	}
-	if threadExecutionParamsTemplate.Timeout == 0 {
+	if threadExecutionParamsTemplate.Timeout <= 0 {
 		threadExecutionParamsTemplate.Timeout = configs.DefaultTimeout
 	}
 
