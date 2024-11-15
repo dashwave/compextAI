@@ -37,7 +37,13 @@ func (s *Server) ListThreads(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	responses.JSON(w, http.StatusOK, threads)
+	responses.JSON(w, http.StatusOK, struct {
+		Threads []models.Thread `json:"threads"`
+		Total   int             `json:"total"`
+	}{
+		Threads: threads,
+		Total:   len(threads),
+	})
 }
 
 func (s *Server) CreateThread(w http.ResponseWriter, r *http.Request) {

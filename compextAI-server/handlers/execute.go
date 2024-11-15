@@ -71,7 +71,13 @@ func (s *Server) ListThreadExecutions(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	responses.JSON(w, http.StatusOK, threadExecutions)
+	responses.JSON(w, http.StatusOK, struct {
+		Executions []models.ThreadExecution `json:"executions"`
+		Total      int                      `json:"total"`
+	}{
+		Executions: threadExecutions,
+		Total:      len(threadExecutions),
+	})
 }
 
 func (s *Server) ExecuteThread(w http.ResponseWriter, r *http.Request) {

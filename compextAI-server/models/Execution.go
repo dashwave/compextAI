@@ -116,6 +116,7 @@ func GetThreadExecutionParamsByID(db *gorm.DB, threadExecutionParamsID string) (
 func GetAllThreadExecutionParams(db *gorm.DB, userID uint, projectID string) ([]ThreadExecutionParams, error) {
 	var threadExecutionParams []ThreadExecutionParams
 	// preload the template
+	// this request is too slow, need to optimize
 	if err := db.Where("user_id = ? AND project_id = ?", userID, projectID).Preload("Template").Find(&threadExecutionParams).Error; err != nil {
 		return nil, err
 	}
