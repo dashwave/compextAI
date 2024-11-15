@@ -1,3 +1,10 @@
+<div align="center">
+<h1>
+CompextAI
+</h1>
+Live at <a href="https://compextai.dev">compextai.dev</a>
+</div>
+
 ## Why CompextAI?
 
 Most AI companies rely on almost the same publicly available models. Yet, what makes each of them so different from other are mainly 2 things:
