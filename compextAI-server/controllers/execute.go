@@ -61,6 +61,7 @@ func ExecuteThread(db *gorm.DB, req *ExecuteThreadRequest) (interface{}, error) 
 		ThreadExecutionParamsTemplateID: req.ThreadExecutionParamTemplateID,
 		Status:                          models.ThreadExecutionStatus_IN_PROGRESS,
 		ProjectID:                       req.ProjectID,
+		Metadata:                        req.Metadata,
 	}
 
 	threadExecution, err = models.CreateThreadExecution(db, threadExecution)

@@ -1,6 +1,10 @@
 package controllers
 
-import "github.com/burnerlee/compextAI/models"
+import (
+	"encoding/json"
+
+	"github.com/burnerlee/compextAI/models"
+)
 
 type ExecuteThreadRequest struct {
 	UserID                         uint
@@ -11,6 +15,7 @@ type ExecuteThreadRequest struct {
 	Messages                       []*models.Message
 	FetchMessagesFromThread        bool
 	ProjectID                      string
+	Metadata                       json.RawMessage
 }
 
 type ExecuteThreadResponse struct {

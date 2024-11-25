@@ -10,9 +10,10 @@ import (
 type ExecuteThreadRequest struct {
 	ThreadExecutionParamID string `json:"thread_execution_param_id"`
 	// messages to execute the thread with - overrides the thread messages
-	Messages                    []*models.Message `json:"messages"`
-	ThreadExecutionSystemPrompt string            `json:"thread_execution_system_prompt"`
-	AppendAssistantResponse     bool              `json:"append_assistant_response"`
+	Messages                    []*models.Message      `json:"messages"`
+	ThreadExecutionSystemPrompt string                 `json:"thread_execution_system_prompt"`
+	AppendAssistantResponse     bool                   `json:"append_assistant_response"`
+	Metadata                    map[string]interface{} `json:"metadata"`
 }
 
 func (r *ExecuteThreadRequest) Validate(threadID string) error {

@@ -32,6 +32,9 @@ type ThreadExecution struct {
 	Role                      string          `json:"role"`
 	ExecutionResponseMetadata json.RawMessage `json:"execution_response_metadata" gorm:"type:jsonb;default:'{}'"`
 	ExecutionRequestMetadata  json.RawMessage `json:"execution_request_metadata" gorm:"type:jsonb;default:'{}'"`
+	// metadata is used to store any additional information about the execution
+	// this is displayed in the UI and can be used for filtering
+	Metadata json.RawMessage `json:"metadata" gorm:"type:jsonb;default:'{}'"`
 }
 
 // ThreadExecutionParams are the parameters for executing a thread
@@ -236,12 +239,17 @@ func GetAllThreadExecutionsByProjectID(db *gorm.DB, projectID string, searchQuer
 	}
 
 	if len(searchParamsMap) > 0 {
-
 		allowedFilters := []string{"status", "thread_id"}
 		for key, value := range searchParamsMap {
 			if slices.Contains(allowedFilters, key) {
 				query = query.Where(fmt.Sprintf("%s = ?", key), value)
 			}
+		}
+	}
+
+	if len(searchParamsMap) > 0 {
+		for key, value := range searchParamsMap {
+			query = query.Where("metadata ->> ? = ?", key, value)
 		}
 	}
 
