@@ -171,6 +171,12 @@ func (s *Server) ExecuteThread(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	metadataJson, err := json.Marshal(request.Metadata)
+	if err != nil {
+		responses.Error(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
 	threadExecution, err := controllers.ExecuteThread(s.DB, &controllers.ExecuteThreadRequest{
 		UserID:                         uint(userID),
 		ThreadID:                       threadID,
@@ -180,6 +186,7 @@ func (s *Server) ExecuteThread(w http.ResponseWriter, r *http.Request) {
 		Messages:                       request.Messages,
 		FetchMessagesFromThread:        true,
 		ProjectID:                      threadExecutionParam.ProjectID,
+		Metadata:                       metadataJson,
 	})
 	if err != nil {
 		responses.Error(w, http.StatusInternalServerError, err.Error())
