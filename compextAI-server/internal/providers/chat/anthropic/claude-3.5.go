@@ -118,13 +118,14 @@ func (g *Claude35) ConvertExecutionResponseToMessage(response interface{}) (*mod
 }
 
 type claude35ExecutionData struct {
-	APIKey       string            `json:"api_key"`
-	Model        string            `json:"model"`
-	Messages     []claude35Message `json:"messages"`
-	Temperature  float64           `json:"temperature"`
-	Timeout      int               `json:"timeout"`
-	MaxTokens    int               `json:"max_tokens"`
-	SystemPrompt string            `json:"system_prompt"`
+	APIKey         string            `json:"api_key"`
+	Model          string            `json:"model"`
+	Messages       []claude35Message `json:"messages"`
+	Temperature    float64           `json:"temperature"`
+	Timeout        int               `json:"timeout"`
+	MaxTokens      int               `json:"max_tokens"`
+	SystemPrompt   string            `json:"system_prompt"`
+	ResponseFormat interface{}       `json:"response_format"`
 }
 
 func (d *claude35ExecutionData) Validate() error {
@@ -164,13 +165,14 @@ func (g *Claude35) ExecuteThread(db *gorm.DB, user *models.User, messages []*mod
 	}
 
 	executionData := claude35ExecutionData{
-		APIKey:       user.AnthropicKey,
-		Model:        g.model,
-		Messages:     modelMessages,
-		Temperature:  threadExecutionParamsTemplate.Temperature,
-		MaxTokens:    threadExecutionParamsTemplate.MaxTokens,
-		Timeout:      threadExecutionParamsTemplate.Timeout,
-		SystemPrompt: systemPrompt,
+		APIKey:         user.AnthropicKey,
+		Model:          g.model,
+		Messages:       modelMessages,
+		Temperature:    threadExecutionParamsTemplate.Temperature,
+		MaxTokens:      threadExecutionParamsTemplate.MaxTokens,
+		Timeout:        threadExecutionParamsTemplate.Timeout,
+		SystemPrompt:   systemPrompt,
+		ResponseFormat: threadExecutionParamsTemplate.ResponseFormat,
 	}
 
 	if err := executionData.Validate(); err != nil {
