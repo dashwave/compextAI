@@ -3,13 +3,14 @@ package handlers
 import "errors"
 
 type createMessage struct {
-	Content  string                 `json:"content"`
+	Content  interface{}            `json:"content"`
 	Role     string                 `json:"role"`
 	Metadata map[string]interface{} `json:"metadata"`
 }
 
 func (m *createMessage) Validate() error {
-	if m.Content == "" {
+	// check if interface is nil
+	if m.Content == nil {
 		return errors.New("content is required")
 	}
 	if m.Role == "" {
@@ -35,7 +36,7 @@ func (r *CreateMessageRequest) Validate() error {
 }
 
 type UpdateMessageRequest struct {
-	Content  string                 `json:"content"`
+	Content  interface{}            `json:"content"`
 	Role     string                 `json:"role"`
 	Metadata map[string]interface{} `json:"metadata"`
 }

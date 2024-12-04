@@ -185,13 +185,21 @@ func (s *Server) UpdateMessage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	contentMap := map[string]interface{}{
+		"content": message.Content,
+	}
+	contentJsonBlob, err := json.Marshal(contentMap)
+	if err != nil {
+		responses.Error(w, http.StatusInternalServerError, err.Error())
+		return
+	}
 	updatedMessage, err := models.UpdateMessage(s.DB, &models.Message{
 		Base: models.Base{
 			Identifier: messageID,
 		},
-		Content:  message.Content,
-		Role:     message.Role,
-		Metadata: metadataJsonBlob,
+		ContentMap: contentJsonBlob,
+		Role:       message.Role,
+		Metadata:   metadataJsonBlob,
 	})
 	if err != nil {
 		responses.Error(w, http.StatusInternalServerError, err.Error())
