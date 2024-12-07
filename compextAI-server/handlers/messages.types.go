@@ -1,6 +1,18 @@
 package handlers
 
-import "errors"
+import (
+	"encoding/json"
+	"errors"
+	"time"
+)
+
+type messageResponse struct {
+	Content   interface{}     `json:"content"`
+	Role      string          `json:"role"`
+	Metadata  json.RawMessage `json:"metadata"`
+	CreatedAt time.Time       `json:"created_at"`
+	UpdatedAt time.Time       `json:"updated_at"`
+}
 
 type createMessage struct {
 	Content  interface{}            `json:"content"`
