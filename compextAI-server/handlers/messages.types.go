@@ -7,11 +7,13 @@ import (
 )
 
 type messageResponse struct {
-	Content   interface{}     `json:"content"`
-	Role      string          `json:"role"`
-	Metadata  json.RawMessage `json:"metadata"`
-	CreatedAt time.Time       `json:"created_at"`
-	UpdatedAt time.Time       `json:"updated_at"`
+	Identifier string          `json:"identifier"`
+	Content    interface{}     `json:"content"`
+	Role       string          `json:"role"`
+	ThreadID   string          `json:"thread_id"`
+	Metadata   json.RawMessage `json:"metadata"`
+	CreatedAt  time.Time       `json:"created_at"`
+	UpdatedAt  time.Time       `json:"updated_at"`
 }
 
 type createMessage struct {

@@ -274,11 +274,13 @@ func convertMessageModelToResponse(message *models.Message) (*messageResponse, e
 		return nil, errors.New("content is required")
 	}
 	messagesResponse := &messageResponse{
-		Content:   contentMsg,
-		Role:      message.Role,
-		Metadata:  message.Metadata,
-		CreatedAt: message.CreatedAt,
-		UpdatedAt: message.UpdatedAt,
+		Content:    contentMsg,
+		ThreadID:   message.ThreadID,
+		Identifier: message.Identifier,
+		Role:       message.Role,
+		Metadata:   message.Metadata,
+		CreatedAt:  message.CreatedAt,
+		UpdatedAt:  message.UpdatedAt,
 	}
 	return messagesResponse, nil
 }
