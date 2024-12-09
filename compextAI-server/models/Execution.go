@@ -32,6 +32,8 @@ type ThreadExecution struct {
 	Role                      string          `json:"role"`
 	ExecutionResponseMetadata json.RawMessage `json:"execution_response_metadata" gorm:"type:jsonb;default:'{}'"`
 	ExecutionRequestMetadata  json.RawMessage `json:"execution_request_metadata" gorm:"type:jsonb;default:'{}'"`
+	// stores the execution time in seconds
+	ExecutionTime uint `json:"execution_time"`
 	// metadata is used to store any additional information about the execution
 	// this is displayed in the UI and can be used for filtering
 	Metadata json.RawMessage `json:"metadata" gorm:"type:jsonb;default:'{}'"`
@@ -97,6 +99,9 @@ func UpdateThreadExecution(db *gorm.DB, threadExecution *ThreadExecution) error 
 	}
 	if threadExecution.InputMessages != nil {
 		updateData["input_messages"] = threadExecution.InputMessages
+	}
+	if threadExecution.ExecutionTime != 0 {
+		updateData["execution_time"] = threadExecution.ExecutionTime
 	}
 	return db.Model(&ThreadExecution{}).Where("identifier = ?", threadExecution.Identifier).Updates(updateData).Error
 }

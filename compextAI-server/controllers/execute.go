@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/burnerlee/compextAI/constants"
 	"github.com/burnerlee/compextAI/internal/logger"
@@ -135,13 +136,16 @@ func handleThreadExecutionError(db *gorm.DB, threadExecution *models.ThreadExecu
 		return
 	}
 
+	executionTime := time.Since(threadExecution.CreatedAt).Seconds()
+
 	updatedThreadExecution := models.ThreadExecution{
 		Base: models.Base{
 			ID:         threadExecution.ID,
 			Identifier: threadExecution.Identifier,
 		},
-		Status: models.ThreadExecutionStatus_FAILED,
-		Output: errJson,
+		Status:        models.ThreadExecutionStatus_FAILED,
+		Output:        errJson,
+		ExecutionTime: uint(executionTime),
 	}
 
 	models.UpdateThreadExecution(db, &updatedThreadExecution)
@@ -196,6 +200,8 @@ func handleThreadExecutionSuccess(db *gorm.DB, p chat.ChatCompletionsProvider, t
 		return
 	}
 
+	executionTime := time.Since(threadExecution.CreatedAt).Seconds()
+
 	updatedThreadExecution := models.ThreadExecution{
 		Base: models.Base{
 			ID:         threadExecution.ID,
@@ -206,6 +212,7 @@ func handleThreadExecutionSuccess(db *gorm.DB, p chat.ChatCompletionsProvider, t
 		Content:                   outputContentString,
 		Role:                      message.Role,
 		ExecutionResponseMetadata: message.Metadata,
+		ExecutionTime:             uint(executionTime),
 	}
 	models.UpdateThreadExecution(db, &updatedThreadExecution)
 }
