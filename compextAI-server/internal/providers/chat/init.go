@@ -12,6 +12,7 @@ const (
 	CLAUDE35  ChatCompletionsProvider_Enum = anthropic.ANTHROPIC_IDENTIFIER
 	O1PREVIEW ChatCompletionsProvider_Enum = openai.O1_PREVIEW_IDENTIFIER
 	O1MINI    ChatCompletionsProvider_Enum = openai.O1_MINI_IDENTIFIER
+	O1        ChatCompletionsProvider_Enum = openai.O1_IDENTIFIER
 )
 
 func init() {
@@ -24,6 +25,7 @@ func init() {
 	chatCompletionsProviderRegistry.register(openai.NewO1Mini())
 	chatCompletionsProviderRegistry.register(openai.NewGPT4())
 	chatCompletionsProviderRegistry.register(openai.NewO1Preview())
+	chatCompletionsProviderRegistry.register(openai.NewO1())
 
 	// anthropic providers
 	chatCompletionsProviderRegistry.register(anthropic.NewClaude35())
