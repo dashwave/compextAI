@@ -163,19 +163,33 @@ func handleThreadExecutionError(db *gorm.DB, threadExecution *models.ThreadExecu
 }
 
 func handleThreadExecutionSuccess(db *gorm.DB, p chat.ChatCompletionsProvider, threadExecution *models.ThreadExecution, threadExecutionResponse interface{}, appendAssistantResponse bool) {
+	updatedThreadExecution := models.ThreadExecution{
+		Base: models.Base{
+			ID:         threadExecution.ID,
+			Identifier: threadExecution.Identifier,
+		},
+		Status: models.ThreadExecutionStatus_COMPLETED,
+	}
 	responseJson, err := json.Marshal(threadExecutionResponse)
 	if err != nil {
 		logger.GetLogger().Errorf("Error marshalling thread execution response: %v", err)
 		handleThreadExecutionError(db, threadExecution, fmt.Errorf("error marshalling thread execution response: %v", err))
+		models.UpdateThreadExecution(db, &updatedThreadExecution)
 		return
 	}
+
+	updatedThreadExecution.Output = responseJson
 
 	message, err := p.ConvertExecutionResponseToMessage(threadExecutionResponse)
 	if err != nil {
 		logger.GetLogger().Errorf("Error converting thread execution response to message: %v", err)
 		handleThreadExecutionError(db, threadExecution, fmt.Errorf("error converting thread execution response to message: %v", err))
+		models.UpdateThreadExecution(db, &updatedThreadExecution)
 		return
 	}
+
+	updatedThreadExecution.Role = message.Role
+	updatedThreadExecution.ExecutionResponseMetadata = message.Metadata
 
 	if appendAssistantResponse {
 		logger.GetLogger().Infof("Appending assistant response")
@@ -197,34 +211,26 @@ func handleThreadExecutionSuccess(db *gorm.DB, p chat.ChatCompletionsProvider, t
 	var contentMap map[string]interface{}
 	if err := json.Unmarshal(message.ContentMap, &contentMap); err != nil {
 		logger.GetLogger().Errorf("Error unmarshalling content map: %v", err)
+		models.UpdateThreadExecution(db, &updatedThreadExecution)
 		return
 	}
 	outputContent, ok := contentMap["content"]
 	if !ok {
 		logger.GetLogger().Errorf("Content map does not contain 'content' key")
+		models.UpdateThreadExecution(db, &updatedThreadExecution)
 		return
 	}
 
 	outputContentString, ok := outputContent.(string)
 	if !ok {
 		logger.GetLogger().Errorf("Content is not a string")
-		return
+		outputContentString = fmt.Sprintf("%v", outputContent)
 	}
 
 	executionTime := time.Since(threadExecution.CreatedAt).Seconds()
 
-	updatedThreadExecution := models.ThreadExecution{
-		Base: models.Base{
-			ID:         threadExecution.ID,
-			Identifier: threadExecution.Identifier,
-		},
-		Status:                    models.ThreadExecutionStatus_COMPLETED,
-		Output:                    responseJson,
-		Content:                   outputContentString,
-		Role:                      message.Role,
-		ExecutionResponseMetadata: message.Metadata,
-		ExecutionTime:             uint(executionTime),
-	}
+	updatedThreadExecution.ExecutionTime = uint(executionTime)
+	updatedThreadExecution.Content = outputContentString
 	models.UpdateThreadExecution(db, &updatedThreadExecution)
 }
 
