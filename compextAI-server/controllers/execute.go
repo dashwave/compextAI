@@ -56,6 +56,12 @@ func ExecuteThread(db *gorm.DB, req *ExecuteThreadRequest) (interface{}, error) 
 		}
 	}
 
+	toolsJson, err := json.Marshal(req.Tools)
+	if err != nil {
+		logger.GetLogger().Errorf("Error marshalling tools: %v", err)
+		return nil, err
+	}
+
 	threadExecution := &models.ThreadExecution{
 		UserID:                          req.UserID,
 		ThreadID:                        req.ThreadID,
@@ -63,7 +69,7 @@ func ExecuteThread(db *gorm.DB, req *ExecuteThreadRequest) (interface{}, error) 
 		Status:                          models.ThreadExecutionStatus_IN_PROGRESS,
 		ProjectID:                       req.ProjectID,
 		Metadata:                        req.Metadata,
-		Tools:                           req.Tools,
+		Tools:                           toolsJson,
 	}
 
 	threadExecution, err = models.CreateThreadExecution(db, threadExecution)
@@ -106,7 +112,7 @@ func ExecuteThread(db *gorm.DB, req *ExecuteThreadRequest) (interface{}, error) 
 		}
 
 		// execute the thread using the chat provider
-		statusCode, threadExecutionResponse, err := chatProvider.ExecuteThread(db, user, messages, &threadExecutionParamsTemplate, threadExecution.Identifier, threadExecution.Tools)
+		statusCode, threadExecutionResponse, err := chatProvider.ExecuteThread(db, user, messages, &threadExecutionParamsTemplate, threadExecution.Identifier, req.Tools)
 		if err != nil {
 			logger.GetLogger().Errorf("Error executing thread: %s: %v: %v", req.ThreadID, err, threadExecutionResponse)
 			handleThreadExecutionError(db, &threadExecution, fmt.Errorf("error executing thread: %v: %v", err, threadExecutionResponse))
