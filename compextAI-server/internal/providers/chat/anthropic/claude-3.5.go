@@ -94,9 +94,10 @@ func (g *Claude35) ConvertExecutionResponseToMessage(response interface{}) (*mod
 	}
 	contentChoice := contentChoices[0].(map[string]interface{})
 
-	content, ok := contentChoice["text"].(string)
+	var content any
+	content, ok = contentChoice["text"].(string)
 	if !ok {
-		return nil, fmt.Errorf("content is not a string")
+		content = contentChoice
 	}
 
 	role, ok := responseMap["role"].(string)
