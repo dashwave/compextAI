@@ -56,6 +56,10 @@ func ExecuteThread(db *gorm.DB, req *ExecuteThreadRequest) (interface{}, error) 
 		}
 	}
 
+	if req.Tools == nil {
+		req.Tools = make([]*models.ExecutionTool, 0)
+	}
+
 	toolsJson, err := json.Marshal(req.Tools)
 	if err != nil {
 		logger.GetLogger().Errorf("Error marshalling tools: %v", err)
