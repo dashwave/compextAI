@@ -14,7 +14,7 @@ def get_instructor_client(api_key):
         api_key=api_key
     ))
 
-def chat_completion(api_key:str, model:str, messages:list, temperature:float, timeout:int, max_completion_tokens:int, response_format:dict):
+def chat_completion(api_key:str, model:str, messages:list, temperature:float, timeout:int, max_completion_tokens:int, response_format:dict, tools:list[dict]):
     if response_format is None or response_format == {}:
         client = get_client(api_key)
         response = client.chat.completions.create(
@@ -23,6 +23,7 @@ def chat_completion(api_key:str, model:str, messages:list, temperature:float, ti
             temperature=temperature,
             timeout=timeout,
             max_completion_tokens=max_completion_tokens,
+            tools=tools if tools else NOT_GIVEN
         )
         llm_response = response.model_dump_json()
     else:
