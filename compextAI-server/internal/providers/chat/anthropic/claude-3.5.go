@@ -134,21 +134,22 @@ func (g *Claude35) ConvertExecutionResponseToMessage(response interface{}) (*mod
 }
 
 type claude35ExecutionData struct {
-	APIKey         string            `json:"api_key"`
-	Model          string            `json:"model"`
-	Messages       []claude35Message `json:"messages"`
-	Temperature    float64           `json:"temperature"`
-	Timeout        int               `json:"timeout"`
-	MaxTokens      int               `json:"max_tokens"`
-	SystemPrompt   string            `json:"system_prompt"`
-	ResponseFormat interface{}       `json:"response_format"`
+	APIKey         string                  `json:"api_key"`
+	Model          string                  `json:"model"`
+	Messages       []claude35Message       `json:"messages"`
+	Temperature    float64                 `json:"temperature"`
+	Timeout        int                     `json:"timeout"`
+	MaxTokens      int                     `json:"max_tokens"`
+	SystemPrompt   string                  `json:"system_prompt"`
+	ResponseFormat interface{}             `json:"response_format"`
+	Tools          []*models.ExecutionTool `json:"tools"`
 }
 
 func (d *claude35ExecutionData) Validate() error {
 	return nil
 }
 
-func (g *Claude35) ExecuteThread(db *gorm.DB, user *models.User, messages []*models.Message, threadExecutionParamsTemplate *models.ThreadExecutionParamsTemplate, threadExecutionIdentifier string) (int, interface{}, error) {
+func (g *Claude35) ExecuteThread(db *gorm.DB, user *models.User, messages []*models.Message, threadExecutionParamsTemplate *models.ThreadExecutionParamsTemplate, threadExecutionIdentifier string, tools []*models.ExecutionTool) (int, interface{}, error) {
 	systemPrompt := ""
 
 	modelMessages := make([]claude35Message, 0)
@@ -204,6 +205,7 @@ func (g *Claude35) ExecuteThread(db *gorm.DB, user *models.User, messages []*mod
 		Timeout:        threadExecutionParamsTemplate.Timeout,
 		SystemPrompt:   systemPrompt,
 		ResponseFormat: threadExecutionParamsTemplate.ResponseFormat,
+		Tools:          tools,
 	}
 
 	if err := executionData.Validate(); err != nil {

@@ -108,13 +108,14 @@ func convertExecutionResponseToMessage(response interface{}) (*models.Message, e
 }
 
 type openaiExecutionData struct {
-	APIKey              string          `json:"api_key"`
-	Model               string          `json:"model"`
-	Messages            []openaiMessage `json:"messages"`
-	Temperature         float64         `json:"temperature"`
-	MaxCompletionTokens int             `json:"max_completion_tokens"`
-	Timeout             int             `json:"timeout"`
-	ResponseFormat      interface{}     `json:"response_format"`
+	APIKey              string                  `json:"api_key"`
+	Model               string                  `json:"model"`
+	Messages            []openaiMessage         `json:"messages"`
+	Temperature         float64                 `json:"temperature"`
+	MaxCompletionTokens int                     `json:"max_completion_tokens"`
+	Timeout             int                     `json:"timeout"`
+	ResponseFormat      interface{}             `json:"response_format"`
+	Tools               []*models.ExecutionTool `json:"tools"`
 }
 
 func (d *openaiExecutionData) Validate() error {
@@ -169,7 +170,7 @@ func filterNonSystemMessages(messages []*models.Message) []*models.Message {
 	return nonSystemMessages
 }
 
-func executeThread(db *gorm.DB, user *models.User, messages []*models.Message, threadExecutionParamsTemplate *models.ThreadExecutionParamsTemplate, threadExecutionIdentifier string, configs *executeParamConfigs) (int, interface{}, error) {
+func executeThread(db *gorm.DB, user *models.User, messages []*models.Message, threadExecutionParamsTemplate *models.ThreadExecutionParamsTemplate, threadExecutionIdentifier string, configs *executeParamConfigs, tools []*models.ExecutionTool) (int, interface{}, error) {
 	systemPrompt := ""
 
 	modelMessages := make([]openaiMessage, 0)
@@ -231,6 +232,7 @@ func executeThread(db *gorm.DB, user *models.User, messages []*models.Message, t
 		MaxCompletionTokens: threadExecutionParamsTemplate.MaxCompletionTokens,
 		Timeout:             threadExecutionParamsTemplate.Timeout,
 		ResponseFormat:      threadExecutionParamsTemplate.ResponseFormat,
+		Tools:               tools,
 	}
 
 	if err := executionData.Validate(); err != nil {

@@ -4,15 +4,17 @@ import (
 	"fmt"
 
 	"github.com/burnerlee/compextAI/constants"
+	"github.com/burnerlee/compextAI/models"
 )
 
 type ExecuteThreadRequest struct {
 	ThreadExecutionParamID string `json:"thread_execution_param_id"`
 	// messages to execute the thread with - overrides the thread messages
-	Messages                    []*createMessage       `json:"messages"`
-	ThreadExecutionSystemPrompt string                 `json:"thread_execution_system_prompt"`
-	AppendAssistantResponse     bool                   `json:"append_assistant_response"`
-	Metadata                    map[string]interface{} `json:"metadata"`
+	Messages                    []*createMessage        `json:"messages"`
+	ThreadExecutionSystemPrompt string                  `json:"thread_execution_system_prompt"`
+	AppendAssistantResponse     bool                    `json:"append_assistant_response"`
+	Tools                       []*models.ExecutionTool `json:"tools"`
+	Metadata                    map[string]interface{}  `json:"metadata"`
 }
 
 func (r *ExecuteThreadRequest) Validate(threadID string) error {
@@ -36,9 +38,10 @@ type ThreadExecutionStatusResponse struct {
 }
 
 type RerunThreadExecutionRequest struct {
-	ThreadExecutionParamTemplateID string `json:"thread_execution_param_template_id"`
-	SystemPrompt                   string `json:"system_prompt"`
-	AppendAssistantResponse        bool   `json:"append_assistant_response"`
+	ThreadExecutionParamTemplateID string                  `json:"thread_execution_param_template_id"`
+	SystemPrompt                   string                  `json:"system_prompt"`
+	AppendAssistantResponse        bool                    `json:"append_assistant_response"`
+	Tools                          []*models.ExecutionTool `json:"tools"`
 }
 
 func (r *RerunThreadExecutionRequest) Validate() error {

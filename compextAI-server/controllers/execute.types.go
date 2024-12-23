@@ -16,6 +16,7 @@ type ExecuteThreadRequest struct {
 	FetchMessagesFromThread        bool
 	ProjectID                      string
 	Metadata                       json.RawMessage
+	Tools                          []*models.ExecutionTool
 }
 
 type ExecuteThreadResponse struct {
@@ -28,4 +29,5 @@ type RerunThreadExecutionRequest struct {
 	ThreadExecutionParamTemplateID string
 	SystemPrompt                   string
 	AppendAssistantResponse        bool
+	Tools                          []*models.ExecutionTool
 }

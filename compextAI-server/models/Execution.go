@@ -36,7 +36,8 @@ type ThreadExecution struct {
 	ExecutionTime uint `json:"execution_time"`
 	// metadata is used to store any additional information about the execution
 	// this is displayed in the UI and can be used for filtering
-	Metadata json.RawMessage `json:"metadata" gorm:"type:jsonb;default:'{}'"`
+	Metadata json.RawMessage  `json:"metadata" gorm:"type:jsonb;default:'{}'"`
+	Tools    []*ExecutionTool `json:"tools"`
 }
 
 // ThreadExecutionParams are the parameters for executing a thread

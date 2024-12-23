@@ -56,12 +56,12 @@ func (g *GPT4) ConvertExecutionResponseToMessage(response interface{}) (*models.
 	return convertExecutionResponseToMessage(response)
 }
 
-func (g *GPT4) ExecuteThread(db *gorm.DB, user *models.User, messages []*models.Message, threadExecutionParamsTemplate *models.ThreadExecutionParamsTemplate, threadExecutionIdentifier string) (int, interface{}, error) {
+func (g *GPT4) ExecuteThread(db *gorm.DB, user *models.User, messages []*models.Message, threadExecutionParamsTemplate *models.ThreadExecutionParamsTemplate, threadExecutionIdentifier string, tools []*models.ExecutionTool) (int, interface{}, error) {
 	return executeThread(db, user, messages, threadExecutionParamsTemplate, threadExecutionIdentifier, &executeParamConfigs{
 		Model:                      g.model,
 		ExecutorRoute:              g.executorRoute,
 		DefaultTemperature:         GPT4_DEFAULT_TEMPERATURE,
 		DefaultMaxCompletionTokens: GPT4_DEFAULT_MAX_COMPLETION_TOKENS,
 		DefaultTimeout:             GPT4_DEFAULT_TIMEOUT,
-	})
+	}, tools)
 }

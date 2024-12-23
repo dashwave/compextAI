@@ -210,6 +210,7 @@ func (s *Server) ExecuteThread(w http.ResponseWriter, r *http.Request) {
 		FetchMessagesFromThread:        true,
 		ProjectID:                      threadExecutionParam.ProjectID,
 		Metadata:                       metadataJson,
+		Tools:                          request.Tools,
 	})
 	if err != nil {
 		responses.Error(w, http.StatusInternalServerError, err.Error())
@@ -341,6 +342,7 @@ func (s *Server) RerunThreadExecution(w http.ResponseWriter, r *http.Request) {
 		ThreadExecutionParamTemplateID: request.ThreadExecutionParamTemplateID,
 		SystemPrompt:                   request.SystemPrompt,
 		AppendAssistantResponse:        request.AppendAssistantResponse,
+		Tools:                          request.Tools,
 	})
 	if err != nil {
 		responses.Error(w, http.StatusInternalServerError, err.Error())

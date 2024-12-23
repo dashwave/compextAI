@@ -59,7 +59,7 @@ func (g *O1Preview) ConvertExecutionResponseToMessage(response interface{}) (*mo
 	return convertExecutionResponseToMessage(response)
 }
 
-func (g *O1Preview) ExecuteThread(db *gorm.DB, user *models.User, messages []*models.Message, threadExecutionParamsTemplate *models.ThreadExecutionParamsTemplate, threadExecutionIdentifier string) (int, interface{}, error) {
+func (g *O1Preview) ExecuteThread(db *gorm.DB, user *models.User, messages []*models.Message, threadExecutionParamsTemplate *models.ThreadExecutionParamsTemplate, threadExecutionIdentifier string, tools []*models.ExecutionTool) (int, interface{}, error) {
 	messages, err := handleSystemPromptForO1(messages, threadExecutionParamsTemplate)
 	if err != nil {
 		logger.GetLogger().Errorf("Error handling system prompt for o1: %v", err)
@@ -72,7 +72,7 @@ func (g *O1Preview) ExecuteThread(db *gorm.DB, user *models.User, messages []*mo
 		DefaultTemperature:         O1_PREVIEW_DEFAULT_TEMPERATURE,
 		DefaultMaxCompletionTokens: O1_PREVIEW_DEFAULT_MAX_COMPLETION_TOKENS,
 		DefaultTimeout:             O1_PREVIEW_DEFAULT_TIMEOUT,
-	})
+	}, tools)
 }
 
 func handleSystemPromptForO1(messages []*models.Message, threadExecutionParamsTemplate *models.ThreadExecutionParamsTemplate) ([]*models.Message, error) {

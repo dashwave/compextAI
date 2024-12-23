@@ -10,19 +10,17 @@ def get_client(api_key):
 def get_instructor_client(api_key):
     return instructor.from_anthropic(Anthropic(api_key=api_key))
 
-def chat_completion(api_key, system_prompt, model, messages, temperature, timeout, max_tokens, response_format):
-    if not system_prompt:
-        system_prompt = NOT_GIVEN
-
+def chat_completion(api_key, system_prompt, model, messages, temperature, timeout, max_tokens, response_format, tools):
     if response_format is None or response_format == {}:
         client = get_client(api_key)
         response = client.messages.create(
         model=model,
-        system=system_prompt,
-        messages=messages,
-        temperature=temperature,
-        timeout=timeout,
+            system=system_prompt if system_prompt else NOT_GIVEN,
+            messages=messages,
+            temperature=temperature,
+            timeout=timeout,
             max_tokens=max_tokens,
+            tools=tools if tools else NOT_GIVEN
         )
         llm_response = response.model_dump_json()
     else:
