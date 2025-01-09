@@ -6,7 +6,9 @@ from pydantic import BaseModel
 import openai_models as openai
 import anthropic_models as anthropic
 import json
+import litellm_base as litellm
 app = fastapi.FastAPI()
+
 
 @app.get("/")
 def read_root():
@@ -16,7 +18,7 @@ class ChatCompletionRequest(BaseModel):
     """
     Request body for the chat completion endpoint.
     """
-    api_key: str
+    api_keys: dict
     model: str
     messages: list[dict]
     temperature: float = 0.5
@@ -30,7 +32,7 @@ class ChatCompletionRequest(BaseModel):
 @app.post("/chatcompletion/openai")
 def chat_completion_openai(request: ChatCompletionRequest):
     try:
-        response = openai.chat_completion(request.api_key, request.model, request.messages, request.temperature, request.timeout, request.max_completion_tokens, request.response_format, request.tools)
+        response = openai.chat_completion(request.api_keys, request.model, request.messages, request.temperature, request.timeout, request.max_completion_tokens, request.response_format, request.tools)
         print(response)
         return JSONResponse(status_code=200, content=json.loads(response))
     except Exception as e:
@@ -40,7 +42,21 @@ def chat_completion_openai(request: ChatCompletionRequest):
 @app.post("/chatcompletion/anthropic")
 def chat_completion_anthropic(request: ChatCompletionRequest):
     try:
-        response = anthropic.chat_completion(request.api_key, request.system_prompt, request.model, request.messages, request.temperature, request.timeout, request.max_tokens, request.response_format, request.tools)
+        response = anthropic.chat_completion(request.api_keys, request.system_prompt, request.model, request.messages, request.temperature, request.timeout, request.max_tokens, request.response_format, request.tools)
+        print(response)
+        return JSONResponse(status_code=200, content=json.loads(response))
+    except Exception as e:
+        print(e)
+        return JSONResponse(status_code=500, content={"error": str(e)})
+    
+@app.post("/chatcompletion/litellm")
+def chat_completion_litellm(request: ChatCompletionRequest):
+    try:
+        print(">>>>>>>>>>>>")
+        print(request.messages)
+        # print(request.tools)
+        print(">>>>>>>>>>>>")
+        response = litellm.chat_completion(request.api_keys, request.model, request.messages, request.temperature, request.timeout, request.max_completion_tokens, request.response_format, request.tools)
         print(response)
         return JSONResponse(status_code=200, content=json.loads(response))
     except Exception as e:

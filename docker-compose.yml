@@ -8,7 +8,7 @@ services:
     ports:
       - 5433:5432
     volumes:
-      - compextai-db-data:/var/lib/postgresql/data
+      - compextai-db-data-2:/var/lib/postgresql/data
     networks:
       - compextai-network
     restart: always
@@ -45,7 +45,7 @@ services:
       - 8889:8889
     restart: always
 volumes:
-  compextai-db-data:
+  compextai-db-data-2:
 
 networks:
   compextai-network:

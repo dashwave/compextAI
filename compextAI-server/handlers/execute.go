@@ -194,10 +194,25 @@ func (s *Server) ExecuteThread(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		toolCallsJson, err := json.Marshal(message.ToolCalls)
+		if err != nil {
+			responses.Error(w, http.StatusInternalServerError, err.Error())
+			return
+		}
+
+		functionCallJson, err := json.Marshal(message.FunctionCall)
+		if err != nil {
+			responses.Error(w, http.StatusInternalServerError, err.Error())
+			return
+		}
+
 		threadMessages = append(threadMessages, &models.Message{
-			ContentMap: messageContentJson,
-			Role:       message.Role,
-			Metadata:   messageMetadataJson,
+			ContentMap:   messageContentJson,
+			Role:         message.Role,
+			ToolCallID:   message.ToolCallID,
+			Metadata:     messageMetadataJson,
+			ToolCalls:    toolCallsJson,
+			FunctionCall: functionCallJson,
 		})
 	}
 	threadExecution, err := controllers.ExecuteThread(s.DB, &controllers.ExecuteThreadRequest{
