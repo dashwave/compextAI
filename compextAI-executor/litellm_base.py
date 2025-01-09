@@ -57,14 +57,14 @@ def get_model_list(api_keys:dict):
         }
     },
     {
-        "model_name": "claude-3-5-sonnet-20240620",
+        "model_name": "claude-3-5-sonnet",
         "litellm_params": {
             "model": "vertex_ai/claude-3-5-sonnet-v2@20241022",
             "vertex_credentials": json.dumps(api_keys.get("google_service_account_creds", {})),
         }
     },
     {
-        "model_name": "claude-3-5-sonnet-20240620",
+        "model_name": "claude-3-5-sonnet",
         "litellm_params": {
             "model": "claude-3-5-sonnet-20240620",
             "api_key": api_keys.get("anthropic", "")
