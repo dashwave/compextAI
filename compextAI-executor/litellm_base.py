@@ -73,7 +73,19 @@ def get_model_list(api_keys:dict):
     ]
 
 def chat_completion(api_keys:dict, model_name:str, messages:list, temperature:float, timeout:int, max_completion_tokens:int, response_format:dict, tools:list[dict]):
-    router = Router(get_model_list(api_keys))
+    router = Router(
+        model_list=get_model_list(api_keys),
+        routing_strategy="latency-based-routing",
+        routing_strategy_args={
+            "ttl": 10,
+            "lowest_latency_buffer": 0.5
+        },
+        enable_pre_call_checks=True,
+        redis_host="redis",
+        redis_port=6379,
+        redis_password="mysecretpassword",
+        cache_responses=True,
+    )
     response = router.completion(
         model=model_name,
         messages=messages,
