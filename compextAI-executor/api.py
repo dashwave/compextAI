@@ -33,7 +33,6 @@ class ChatCompletionRequest(BaseModel):
 def chat_completion_openai(request: ChatCompletionRequest):
     try:
         response = openai.chat_completion(request.api_keys, request.model, request.messages, request.temperature, request.timeout, request.max_completion_tokens, request.response_format, request.tools)
-        print(response)
         return JSONResponse(status_code=200, content=json.loads(response))
     except Exception as e:
         print(e)
@@ -43,7 +42,6 @@ def chat_completion_openai(request: ChatCompletionRequest):
 def chat_completion_anthropic(request: ChatCompletionRequest):
     try:
         response = anthropic.chat_completion(request.api_keys, request.system_prompt, request.model, request.messages, request.temperature, request.timeout, request.max_tokens, request.response_format, request.tools)
-        print(response)
         return JSONResponse(status_code=200, content=json.loads(response))
     except Exception as e:
         print(e)
@@ -52,12 +50,7 @@ def chat_completion_anthropic(request: ChatCompletionRequest):
 @app.post("/chatcompletion/litellm")
 def chat_completion_litellm(request: ChatCompletionRequest):
     try:
-        print(">>>>>>>>>>>>")
-        print(request.messages)
-        # print(request.tools)
-        print(">>>>>>>>>>>>")
         response = litellm.chat_completion(request.api_keys, request.model, request.messages, request.temperature, request.timeout, request.max_completion_tokens, request.response_format, request.tools)
-        print(response)
         return JSONResponse(status_code=200, content=json.loads(response))
     except Exception as e:
         print(e)
