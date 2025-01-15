@@ -5,7 +5,7 @@ import requests
 
 litellm.vertex_location = "us-east5"
 litellm.vertex_project = "dashwave"
-litellm.set_verbose = True
+# litellm.set_verbose = True
 
 AZURE_LOCATION = "eastus"
 AZURE_VERSION = "2024-08-01-preview"
