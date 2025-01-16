@@ -148,16 +148,6 @@ func ExecuteThread(db *gorm.DB, req *ExecuteThreadRequest) (interface{}, error) 
 }
 
 func handleThreadExecutionError(db *gorm.DB, threadExecution *models.ThreadExecution, execErr error) {
-	errJson, jsonErr := json.Marshal(struct {
-		Error string `json:"error"`
-	}{
-		Error: execErr.Error(),
-	})
-	if jsonErr != nil {
-		logger.GetLogger().Errorf("Error marshalling error: %v", jsonErr)
-		return
-	}
-
 	executionTime := time.Since(threadExecution.CreatedAt).Seconds()
 
 	updatedThreadExecution := models.ThreadExecution{
@@ -166,10 +156,20 @@ func handleThreadExecutionError(db *gorm.DB, threadExecution *models.ThreadExecu
 			Identifier: threadExecution.Identifier,
 		},
 		Status:        models.ThreadExecutionStatus_FAILED,
-		Output:        errJson,
 		ExecutionTime: uint(executionTime),
 	}
+	errJson, jsonErr := json.Marshal(struct {
+		Error string `json:"error"`
+	}{
+		Error: execErr.Error(),
+	})
+	if jsonErr != nil {
+		logger.GetLogger().Errorf("Error marshalling error: %v", jsonErr)
+		models.UpdateThreadExecution(db, &updatedThreadExecution)
+		return
+	}
 
+	updatedThreadExecution.Output = errJson
 	models.UpdateThreadExecution(db, &updatedThreadExecution)
 }
 
