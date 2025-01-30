@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
+	"time"
 
 	"github.com/burnerlee/compextAI/constants"
 	"github.com/burnerlee/compextAI/controllers"
@@ -113,15 +114,35 @@ func (s *Server) ListThreadExecutions(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	threadExecutions, total, err := models.GetAllThreadExecutionsByProjectID(s.DB, projectID, searchQuery, searchFiltersMap, page, limit)
+	execs, total, err := models.GetAllThreadExecutionsByProjectID(s.DB, projectID, searchQuery, searchFiltersMap, page, limit)
 	if err != nil {
 		responses.Error(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
+	type threadExecution struct {
+		Identifier string          `json:"identifier"`
+		Status     string          `json:"status"`
+		CreatedAt  string          `json:"created_at"`
+		UpdatedAt  string          `json:"updated_at"`
+		ThreadID   string          `json:"thread_id"`
+		Metadata   json.RawMessage `json:"metadata"`
+	}
+	threadExecutions := []threadExecution{}
+	for _, exec := range execs {
+		threadExecutions = append(threadExecutions, threadExecution{
+			Identifier: exec.Identifier,
+			Status:     exec.Status,
+			CreatedAt:  exec.CreatedAt.Format(time.RFC3339),
+			UpdatedAt:  exec.UpdatedAt.Format(time.RFC3339),
+			ThreadID:   exec.ThreadID,
+			Metadata:   exec.Metadata,
+		})
+	}
+
 	responses.JSON(w, http.StatusOK, struct {
-		Executions []models.ThreadExecution `json:"executions"`
-		Total      int                      `json:"total"`
+		Executions []threadExecution `json:"executions"`
+		Total      int               `json:"total"`
 	}{
 		Executions: threadExecutions,
 		Total:      int(total),
