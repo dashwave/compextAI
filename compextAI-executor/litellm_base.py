@@ -1,10 +1,12 @@
 from litellm import Router
+from litellm.utils import token_counter, get_model_info
 import json
 import litellm
 import requests
 
 litellm.vertex_location = "us-east5"
 litellm.vertex_project = "dashwave"
+
 # litellm.set_verbose = True
 
 AZURE_LOCATION = "eastus"
@@ -87,8 +89,36 @@ router = Router(
 
 def chat_completion(api_keys:dict, model_name:str, messages:list, temperature:float, timeout:int, max_completion_tokens:int, response_format:dict, tools:list[dict]):
     router.set_model_list(get_model_list(api_keys))
+
+    available_models = router.get_model_list()
+
+    selected_model_name = None
+    for model in available_models:
+        if model["model_name"] == model_name:
+            selected_model_name = model["litellm_params"]["model"]
+            break
+
+    if selected_model_name is None:
+        raise Exception(f"Model {model_name} not found")
+    
+    max_allowed_input_tokens = get_model_info(selected_model_name)["max_input_tokens"]
+
+    while True:
+        messages_tokens = token_counter(
+            model=selected_model_name,
+            messages=messages,
+        )
+        if messages_tokens > max_allowed_input_tokens:
+            user_msg_indices = [i for i, message in enumerate(messages) if message["role"] == "user"]
+            
+            # remove all the messages from top until the second user message
+            if len(user_msg_indices) > 1:
+                messages = messages[user_msg_indices[1]:]
+        else:
+            break
+
     response = router.completion(
-        model=model_name,
+        model=selected_model_name,
         messages=messages,
         temperature=temperature,
         timeout=timeout,
@@ -96,4 +126,5 @@ def chat_completion(api_keys:dict, model_name:str, messages:list, temperature:fl
         response_format=response_format if response_format else None,
         tools=tools if tools else None
     )
+
     return response.model_dump_json()
