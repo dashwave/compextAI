@@ -132,6 +132,7 @@ def chat_completion(api_keys:dict, model_name:str, messages:list, temperature:fl
         model=model_name,
         messages=messages,
         temperature=temperature,
+        num_retries=3,
         timeout=timeout,
         max_completion_tokens=max_completion_tokens if max_completion_tokens else None,
         response_format=response_format if response_format else None,
