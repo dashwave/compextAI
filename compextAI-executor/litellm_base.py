@@ -91,6 +91,8 @@ router = Router(
 def chat_completion(api_keys:dict, model_name:str, messages:list, temperature:float, timeout:int, max_completion_tokens:int, response_format:dict, tools:list[dict]):
     router.set_model_list(get_model_list(api_keys))
 
+    print(router.get_model_list())
+    print(f"model_name: {model_name}")
     available_models = router.get_model_list()
 
     selected_model_name = None
