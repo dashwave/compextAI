@@ -42,15 +42,15 @@ def get_model_list(api_keys:dict):
             "api_key": api_keys.get("openai", "")
         }
     },
-    {
-        "model_name": "gpt-4o",
-        "litellm_params": {
-            "model": "azure/gpt-4o",
-            "api_key": api_keys.get("azure", ""),
-            "api_base": api_keys.get("azure_endpoint", ""),
-            "api_version": AZURE_VERSION
-        }
-    },
+    # {
+    #     "model_name": "gpt-4o",
+    #     "litellm_params": {
+    #         "model": "azure/gpt-4o",
+    #         "api_key": api_keys.get("azure", ""),
+    #         "api_base": api_keys.get("azure_endpoint", ""),
+    #         "api_version": AZURE_VERSION
+    #     }
+    # },
     {
         "model_name": "gpt-4o",
         "litellm_params": {
