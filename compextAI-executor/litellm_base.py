@@ -74,6 +74,26 @@ def get_model_list(api_keys:dict):
     },
     ]
 
+def get_model_identifier(model_name:str):
+    if model_name.__contains__("claude-3-5-sonnet"):
+        model_name = "claude-3-5-sonnet-20240620"
+    elif model_name.__contains__("gpt-4o"):
+        model_name = "gpt-4o"
+    elif model_name.__contains__("gpt-4"):
+        model_name = "gpt-4"
+    elif model_name.__contains__("o1"):
+        model_name = "o1"
+    elif model_name.__contains__("o1-preview"):
+        model_name = "o1-preview"
+    elif model_name.__contains__("o1-mini"):
+        model_name = "o1-mini"
+    return model_name
+
+def get_model_info_from_model_name(model_name:str):
+    model_name = get_model_identifier(model_name)
+    model_info = get_model_info(model_name)
+    return model_info
+
 router = Router(
     routing_strategy="latency-based-routing",
     routing_strategy_args={
@@ -91,24 +111,12 @@ router = Router(
 def chat_completion(api_keys:dict, model_name:str, messages:list, temperature:float, timeout:int, max_completion_tokens:int, response_format:dict, tools:list[dict]):
     router.set_model_list(get_model_list(api_keys))
 
-    available_models = router.get_model_list()
-
-    selected_model_name = None
-    for model in available_models:
-        if model["model_name"] == model_name:
-            selected_model_name = model["litellm_params"]["model"]
-            break
-
-    if selected_model_name is None:
-        raise Exception(f"Model {model_name} not found")
-    
-    # remove the provider name from the model name if it exists
-    selected_model_name = selected_model_name.split("/")[-1]
-    max_allowed_input_tokens = get_model_info(selected_model_name)["max_input_tokens"]
+    model_info = get_model_info_from_model_name(model_name)
+    max_allowed_input_tokens = model_info["max_input_tokens"]
 
     while True:
         messages_tokens = token_counter(
-            model=selected_model_name,
+            model=get_model_identifier(model_name),
             messages=messages,
         )
         if messages_tokens > max_allowed_input_tokens:
