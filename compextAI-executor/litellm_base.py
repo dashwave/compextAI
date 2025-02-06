@@ -85,6 +85,7 @@ router = Router(
     redis_port=6379,
     redis_password="mysecretpassword",
     cache_responses=True,
+    cooldown_time=3600
 )
 
 def chat_completion(api_keys:dict, model_name:str, messages:list, temperature:float, timeout:int, max_completion_tokens:int, response_format:dict, tools:list[dict]):
