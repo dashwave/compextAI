@@ -91,8 +91,6 @@ router = Router(
 def chat_completion(api_keys:dict, model_name:str, messages:list, temperature:float, timeout:int, max_completion_tokens:int, response_format:dict, tools:list[dict]):
     router.set_model_list(get_model_list(api_keys))
 
-    print(router.get_model_list())
-    print(f"model_name: {model_name}")
     available_models = router.get_model_list()
 
     selected_model_name = None
@@ -104,6 +102,8 @@ def chat_completion(api_keys:dict, model_name:str, messages:list, temperature:fl
     if selected_model_name is None:
         raise Exception(f"Model {model_name} not found")
     
+    # remove the provider name from the model name if it exists
+    selected_model_name = selected_model_name.split("/")[-1]
     max_allowed_input_tokens = get_model_info(selected_model_name)["max_input_tokens"]
 
     while True:
@@ -121,7 +121,7 @@ def chat_completion(api_keys:dict, model_name:str, messages:list, temperature:fl
             break
 
     response = router.completion(
-        model=selected_model_name,
+        model=model_name,
         messages=messages,
         temperature=temperature,
         timeout=timeout,
