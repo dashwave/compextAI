@@ -73,6 +73,7 @@ def get_model_list(api_keys:dict):
         }
     },
     {
+        #https://docs.litellm.ai/docs/providers/anthropic#usage---thinking--reasoning_content
         "model_name": "claude-3-7-sonnet",
         "litellm_params": {
             "model": "claude-3-7-sonnet-20250219",
