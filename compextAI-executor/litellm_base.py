@@ -72,11 +72,21 @@ def get_model_list(api_keys:dict):
             "api_key": api_keys.get("anthropic", "")
         }
     },
+    {
+        #https://docs.litellm.ai/docs/providers/anthropic#usage---thinking--reasoning_content
+        "model_name": "claude-3-7-sonnet",
+        "litellm_params": {
+            "model": "claude-3-7-sonnet-20250219",
+            "api_key": api_keys.get("anthropic", "")
+        }
+    },
     ]
 
 def get_model_identifier(model_name:str):
     if model_name.__contains__("claude-3-5-sonnet"):
         model_name = "claude-3-5-sonnet-20240620"
+    if model_name.__contains__("claude-3-7-sonnet"):
+        model_name = "claude-3-7-sonnet-20250219"
     elif model_name.__contains__("gpt-4o"):
         model_name = "gpt-4o"
     elif model_name.__contains__("gpt-4"):
