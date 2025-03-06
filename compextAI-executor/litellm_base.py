@@ -2,7 +2,7 @@ from litellm import Router
 from litellm.utils import token_counter, get_model_info
 import json
 import litellm
-import requests
+
 
 litellm.vertex_location = "us-east5"
 litellm.vertex_project = "dashwave"
