@@ -2,7 +2,7 @@ from litellm import Router
 from litellm.utils import token_counter, get_model_info
 import json
 import litellm
-import requests
+
 
 litellm.vertex_location = "us-east5"
 litellm.vertex_project = "dashwave"
@@ -78,6 +78,14 @@ def get_model_list(api_keys:dict):
         "litellm_params": {
             "model": "claude-3-7-sonnet-20250219",
             "api_key": api_keys.get("anthropic", "")
+        }
+    },
+    {
+        #https://console.cloud.google.com/vertex-ai/publishers/anthropic/model-garden/claude-3-7-sonnet?hl=en&project=dashwave
+        "model_name": "claude-3-7-sonnet",
+        "litellm_params": {
+            "model": "vertex_ai/claude-3-7-sonnet@20250219",
+            "vertex_credentials": json.dumps(api_keys.get("google_service_account_creds", {})),
         }
     },
     ]
