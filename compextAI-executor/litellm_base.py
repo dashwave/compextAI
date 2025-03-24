@@ -58,13 +58,13 @@ def get_model_list(api_keys:dict):
             "api_key": api_keys.get("openai", "")
         }
     },
-    {
-        "model_name": "claude-3-5-sonnet",
-        "litellm_params": {
-            "model": "vertex_ai/claude-3-5-sonnet-v2@20241022",
-            "vertex_credentials": json.dumps(api_keys.get("google_service_account_creds", {})),
-        }
-    },
+    # {
+    #     "model_name": "claude-3-5-sonnet",
+    #     "litellm_params": {
+    #         "model": "vertex_ai/claude-3-5-sonnet-v2@20241022",
+    #         "vertex_credentials": json.dumps(api_keys.get("google_service_account_creds", {})),
+    #     }
+    # },
     {
         "model_name": "claude-3-5-sonnet",
         "litellm_params": {
@@ -80,14 +80,14 @@ def get_model_list(api_keys:dict):
             "api_key": api_keys.get("anthropic", "")
         }
     },
-    {
-        #https://console.cloud.google.com/vertex-ai/publishers/anthropic/model-garden/claude-3-7-sonnet?hl=en&project=dashwave
-        "model_name": "claude-3-7-sonnet",
-        "litellm_params": {
-            "model": "vertex_ai/claude-3-7-sonnet@20250219",
-            "vertex_credentials": json.dumps(api_keys.get("google_service_account_creds", {})),
-        }
-    },
+    # {
+    #     #https://console.cloud.google.com/vertex-ai/publishers/anthropic/model-garden/claude-3-7-sonnet?hl=en&project=dashwave
+    #     "model_name": "claude-3-7-sonnet",
+    #     "litellm_params": {
+    #         "model": "vertex_ai/claude-3-7-sonnet@20250219",
+    #         "vertex_credentials": json.dumps(api_keys.get("google_service_account_creds", {})),
+    #     }
+    # },
     ]
 
 def get_model_identifier(model_name:str):
